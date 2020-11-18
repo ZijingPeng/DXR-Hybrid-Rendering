@@ -203,11 +203,13 @@ struct D3D12Resources
 
 	ID3D12DescriptorHeap*							rtvHeap = nullptr;
 	ID3D12DescriptorHeap*							descriptorHeap = nullptr;
+	ID3D12DescriptorHeap*							dsvHeap = nullptr;
 
 	ID3D12Resource*									texture = nullptr;
 	ID3D12Resource*									textureUploadResource = nullptr;
 
 	UINT											rtvDescSize = 0;
+	UINT											dsvDescSize = 0;
 
 	float											translationOffset = 0;
 	float											rotationOffset = 0;

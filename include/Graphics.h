@@ -91,6 +91,8 @@ namespace D3D12
 	void MoveToNextFrame(D3D12Global &d3d);
 
 	void Destroy(D3D12Global &d3d);
+
+	void Build_Command_List_Gbuffer(D3D12Global& d3d, D3D12Resources& resources);
 }
 
 namespace DXR

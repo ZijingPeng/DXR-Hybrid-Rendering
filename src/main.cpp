@@ -101,8 +101,15 @@ public:
 	}
 
 	void Render() 
-	{		
-		DXR::Build_Command_List(d3d, dxr, resources);
+	{	
+		// Rasterization
+
+		// Raytracing
+		// DXR::Build_Command_List(d3d, dxr, resources);
+
+		// Submit the command list and wait for the GPU to idle
+		D3D12::Submit_CmdList(d3d);
+		D3D12::WaitForGPU(d3d);
 		D3D12::Present(d3d);
 		D3D12::MoveToNextFrame(d3d);
 		D3D12::Reset_CommandList(d3d);

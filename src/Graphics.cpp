@@ -309,6 +309,17 @@ void Create_Descriptor_Heaps(D3D12Global &d3d, D3D12Resources &resources)
 #endif
 
 	resources.rtvDescSize = d3d.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	D3D12_DESCRIPTOR_HEAP_DESC dsvDesc;
+	dsvDesc.NumDescriptors = 1;
+	dsvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvDesc.NodeMask = 0;
+	hr = d3d.device->CreateDescriptorHeap(&dsvDesc, IID_PPV_ARGS(&resources.dsvHeap));
+#if NAME_D3D_RESOURCES
+	resources.dsvHeap->SetName(L"DSV Descriptor Heap");
+#endif
+	resources.dsvDescSize = d3d.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
 /**
@@ -521,6 +532,7 @@ void Create_Device(D3D12Global &d3d)
 			// Check if the device supports ray tracing.
 			D3D12_FEATURE_DATA_D3D12_OPTIONS5 features = {};
 			HRESULT hr = d3d.device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &features, sizeof(features));
+
 			if (FAILED(hr) || features.RaytracingTier < D3D12_RAYTRACING_TIER_1_0)
 			{
 				SAFE_RELEASE(d3d.device);
@@ -762,6 +774,15 @@ void Destroy(D3D12Global &d3d)
 	SAFE_RELEASE(d3d.device);
 	SAFE_RELEASE(d3d.adapter);
 	SAFE_RELEASE(d3d.factory);
+}
+
+void Build_Command_List_Gbuffer(D3D12Global& d3d, D3D12Resources& resources)
+{
+	// Add Resource Barrier
+
+	// Clear render target
+
+
 }
 
 }
@@ -1409,10 +1430,6 @@ void Build_Command_List(D3D12Global &d3d, DXRGlobal &dxr, D3D12Resources &resour
 	
 	// Wait for the transitions to complete
 	d3d.cmdList->ResourceBarrier(1, &OutputBarriers[0]);
-
-	// Submit the command list and wait for the GPU to idle
-	D3D12::Submit_CmdList(d3d);
-	D3D12::WaitForGPU(d3d);
 }
 
 /**

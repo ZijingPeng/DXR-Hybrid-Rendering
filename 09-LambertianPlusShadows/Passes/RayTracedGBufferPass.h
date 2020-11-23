@@ -16,39 +16,36 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "Falcor.h"
-#include "../SharedUtils/RenderingPipeline.h"
-#include "Passes/SimpleGBufferPass.h"
-#include "Passes/AmbientOcclusionPass.h"
-#include "Passes/SimpleAccumulationPass.h"
-#include "Passes/ShadowPass.h"
-#include "Passes/ReflectionPass.h"
-#include "Passes/CopyToOutputPass.h"
-#include "Passes/DirectLightingPass.h"
-#include "Passes/FinalStagePass.h"
+#pragma once
+#include "../SharedUtils/RenderPass.h"
+#include "../SharedUtils/SimpleVars.h"
+#include "../SharedUtils/RayLaunch.h"
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+class RayTracedGBufferPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, RayTracedGBufferPass>
 {
-	// Create our rendering pipeline
-	RenderingPipeline *pipeline = new RenderingPipeline();
+public:
+    using SharedPtr = std::shared_ptr<RayTracedGBufferPass>;
 
-	// Add passes into our pipeline
-	pipeline->setPass(0, SimpleGBufferPass::create());        
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, SimpleAccumulationPass::create("aoChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, SimpleAccumulationPass::create("shadowChannel"));
-	pipeline->setPass(5, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
-	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(8, FinalStagePass::create());
-	//pipeline->setPass(9, SimpleAccumulationPass::create());
+    static SharedPtr create() { return SharedPtr(new RayTracedGBufferPass()); }
+    virtual ~RayTracedGBufferPass() = default;
 
-	// Define a set of config / window parameters for our program
-    SampleConfig config;
-    config.windowDesc.title = "Hybrid Rendering";
-    config.windowDesc.resizableWindow = true;
+protected:
+	RayTracedGBufferPass() : ::RenderPass("Ray Traced G-Buffer", "Ray Traced G-Buffer Options") {}
 
-	// Start our program!
-	RenderingPipeline::run(pipeline, config);
-}
+    // Implementation of RenderPass interface
+    bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+    void execute(RenderContext* pRenderContext) override;
+	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+
+	// The base RenderPass class defines a number of methods that we can override to 
+	//    specify what properties this pass has.  
+	bool requiresScene() override { return true; }
+	bool usesRayTracing() override { return true; }
+
+	// Internal pass state
+	RayLaunch::SharedPtr        mpRays;            ///< Our wrapper around a DX Raytracing pass
+	RtScene::SharedPtr          mpScene;           ///<  A copy of our scene
+
+	// What's our background color?
+	vec3                        mBgColor = vec3(0.5f, 0.5f, 1.0f);  
+};

@@ -15,40 +15,27 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
+// Some shared Falcor stuff for talking between CPU and GPU code
+#include "HostDeviceSharedMacros.h"
+#include "HostDeviceData.h"      
 
-#include "Falcor.h"
-#include "../SharedUtils/RenderingPipeline.h"
-#include "Passes/SimpleGBufferPass.h"
-#include "Passes/AmbientOcclusionPass.h"
-#include "Passes/SimpleAccumulationPass.h"
-#include "Passes/ShadowPass.h"
-#include "Passes/ReflectionPass.h"
-#include "Passes/CopyToOutputPass.h"
-#include "Passes/DirectLightingPass.h"
-#include "Passes/FinalStagePass.h"
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+Texture2D<float4>   gAO;           
+Texture2D<float4>   gShadow;  
+Texture2D<float4>   gReflection; 
+Texture2D<float4>   gDirectLighting;
+
+float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
-	// Create our rendering pipeline
-	RenderingPipeline *pipeline = new RenderingPipeline();
+    uint2 pixelPos = (uint2)pos.xy;
+    float4 shadow = gShadow[pixelPos];
+    float4 reflection = gReflection[pixelPos];
+	float4 directLighting = gDirectLighting[pixelPos];
+    float4 ambientOcclusion = gAO[pixelPos];
 
-	// Add passes into our pipeline
-	pipeline->setPass(0, SimpleGBufferPass::create());        
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, SimpleAccumulationPass::create("aoChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, SimpleAccumulationPass::create("shadowChannel"));
-	pipeline->setPass(5, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
-	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(8, FinalStagePass::create());
-	//pipeline->setPass(9, SimpleAccumulationPass::create());
+	float3 shadeColor;
 
-	// Define a set of config / window parameters for our program
-    SampleConfig config;
-    config.windowDesc.title = "Hybrid Rendering";
-    config.windowDesc.resizableWindow = true;
+	shadeColor = (directLighting * ambientOcclusion * shadow).rgb;
 
-	// Start our program!
-	RenderingPipeline::run(pipeline, config);
+	return float4(shadeColor, 1.0f);
 }

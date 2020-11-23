@@ -16,39 +16,41 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "Falcor.h"
-#include "../SharedUtils/RenderingPipeline.h"
-#include "Passes/SimpleGBufferPass.h"
-#include "Passes/AmbientOcclusionPass.h"
-#include "Passes/SimpleAccumulationPass.h"
-#include "Passes/ShadowPass.h"
-#include "Passes/ReflectionPass.h"
-#include "Passes/CopyToOutputPass.h"
-#include "Passes/DirectLightingPass.h"
-#include "Passes/FinalStagePass.h"
+// Falcor / Slang imports to include shared code and data structures
+__import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
+__import DefaultVS;         // VertexOut declaration
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+struct GBuffer
 {
-	// Create our rendering pipeline
-	RenderingPipeline *pipeline = new RenderingPipeline();
+	float4 wsPos    : SV_Target0;
+	float4 wsNorm   : SV_Target1;
+	float4 matDif   : SV_Target2;
+	float4 matSpec  : SV_Target3;
+	float4 matExtra : SV_Target4;
+};
 
-	// Add passes into our pipeline
-	pipeline->setPass(0, SimpleGBufferPass::create());        
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, SimpleAccumulationPass::create("aoChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, SimpleAccumulationPass::create("shadowChannel"));
-	pipeline->setPass(5, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
-	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(8, FinalStagePass::create());
-	//pipeline->setPass(9, SimpleAccumulationPass::create());
+// Our main entry point for the g-buffer fragment shader.
+GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Position)
+{
+	// This is a Falcor built-in that extracts data suitable for shading routines
+	//     (see ShaderCommon.slang for the shading data structure and routines)
+	ShadingData hitPt = prepareShadingData(vsOut, gMaterial, gCamera.posW);
 
-	// Define a set of config / window parameters for our program
-    SampleConfig config;
-    config.windowDesc.title = "Hybrid Rendering";
-    config.windowDesc.resizableWindow = true;
+	// Check if we hit the back of a double-sided material, in which case, we flip
+	//     normals around here (so we don't need to when shading)
+	float NdotV = dot(normalize(hitPt.N.xyz), normalize(gCamera.posW - hitPt.posW));
+	if (NdotV <= 0.0f && hitPt.doubleSidedMaterial)
+		hitPt.N = -hitPt.N;
 
-	// Start our program!
-	RenderingPipeline::run(pipeline, config);
+	// Dump out our G buffer channels
+	GBuffer gBufOut;
+	gBufOut.wsPos    = float4(hitPt.posW, 1.f);
+	gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - gCamera.posW) );
+	gBufOut.matDif   = float4(hitPt.diffuse, hitPt.opacity);
+	gBufOut.matSpec  = float4(hitPt.specular, hitPt.linearRoughness);
+	gBufOut.matExtra = float4(hitPt.IoR, hitPt.doubleSidedMaterial ? 1.f : 0.f, 0.f, 0.f);
+
+	return gBufOut;
 }
+
+

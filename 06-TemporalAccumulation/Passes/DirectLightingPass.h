@@ -16,39 +16,40 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "Falcor.h"
-#include "../SharedUtils/RenderingPipeline.h"
-#include "Passes/SimpleGBufferPass.h"
-#include "Passes/AmbientOcclusionPass.h"
-#include "Passes/SimpleAccumulationPass.h"
-#include "Passes/ShadowPass.h"
-#include "Passes/ReflectionPass.h"
-#include "Passes/CopyToOutputPass.h"
-#include "Passes/DirectLightingPass.h"
-#include "Passes/FinalStagePass.h"
+// This class is to shading for the direct lighting
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+#pragma once
+#include "../SharedUtils/RenderPass.h"
+#include "../SharedUtils/FullscreenLaunch.h"
+
+class DirectLightingPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, DirectLightingPass>
 {
-	// Create our rendering pipeline
-	RenderingPipeline *pipeline = new RenderingPipeline();
+public:
+    using SharedPtr = std::shared_ptr<DirectLightingPass>;
 
-	// Add passes into our pipeline
-	pipeline->setPass(0, SimpleGBufferPass::create());        
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, SimpleAccumulationPass::create("aoChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, SimpleAccumulationPass::create("shadowChannel"));
-	pipeline->setPass(5, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
-	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(8, FinalStagePass::create());
-	//pipeline->setPass(9, SimpleAccumulationPass::create());
+	static SharedPtr create(const std::string &bufferToAccumulate = ResourceManager::kOutputChannel);
+	virtual ~DirectLightingPass() = default;
 
-	// Define a set of config / window parameters for our program
-    SampleConfig config;
-    config.windowDesc.title = "Hybrid Rendering";
-    config.windowDesc.resizableWindow = true;
+protected:
+	DirectLightingPass(const std::string &bufferToAccumulate);
 
-	// Start our program!
-	RenderingPipeline::run(pipeline, config);
-}
+    // Implementation of SimpleRenderPass interface
+	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui* pGui) override;
+	void resize(uint32_t width, uint32_t height) override;
+
+	// The RenderPass class defines various methods we can override to specify this pass' properties. 
+	bool appliesPostprocess() override { return true; }
+
+	std::string                   mOutputTexName;
+
+	// State for our shader
+	FullscreenLaunch::SharedPtr   mpLambertShader;
+	GraphicsState::SharedPtr      mpGfxState;
+	Fbo::SharedPtr                mpInternalFbo;
+
+	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
+	Scene::SharedPtr              mpScene;
+};

@@ -11,10 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\CommonPasses\CopyToOutputPass.cpp" />
-    <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="..\CommonPasses\SimpleGBufferPass.cpp" />
-    <ClCompile Include="..\CommonPasses\ThinLensGBufferPass.cpp" />
     <ClCompile Include="..\SharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="..\SharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="..\SharedUtils\RayLaunch.cpp" />
@@ -23,15 +19,16 @@
     <ClCompile Include="..\SharedUtils\ResourceManager.cpp" />
     <ClCompile Include="..\SharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="..\SharedUtils\SimpleVars.cpp" />
+    <ClCompile Include="Passes\AmbientOcclusionPass.cpp" />
+    <ClCompile Include="Passes\CopyToOutputPass.cpp" />
     <ClCompile Include="Passes\LambertianPlusShadowPass.cpp" />
-    <ClCompile Include="ShadowPass.cpp" />
+    <ClCompile Include="Passes\RayTracedGBufferPass.cpp" />
+    <ClCompile Include="Passes\ShadowPass.cpp" />
+    <ClCompile Include="Passes\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="Passes\SimpleGBufferPass.cpp" />
     <ClCompile Include="Tutor09-LambertianPlusShadows.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
-    <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h" />
-    <ClInclude Include="..\CommonPasses\SimpleGBufferPass.h" />
-    <ClInclude Include="..\CommonPasses\ThinLensGBufferPass.h" />
     <ClInclude Include="..\SharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="..\SharedUtils\RasterLaunch.h" />
     <ClInclude Include="..\SharedUtils\RayLaunch.h" />
@@ -40,10 +37,17 @@
     <ClInclude Include="..\SharedUtils\ResourceManager.h" />
     <ClInclude Include="..\SharedUtils\SceneLoaderWrapper.h" />
     <ClInclude Include="..\SharedUtils\SimpleVars.h" />
+    <ClInclude Include="Passes\AmbientOcclusionPass.h" />
+    <ClInclude Include="Passes\CopyToOutputPass.h" />
     <ClInclude Include="Passes\LambertianPlusShadowPass.h" />
-    <ClInclude Include="ShadowPass.h" />
+    <ClInclude Include="Passes\RayTracedGBufferPass.h" />
+    <ClInclude Include="Passes\ShadowPass.h" />
+    <ClInclude Include="Passes\SimpleAccumulationPass.h" />
+    <ClInclude Include="Passes\SimpleGBufferPass.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\hlslUtils.hlsli" />
+    <None Include="Data\lambertianPlusShadowsUtils.hlsli" />
     <None Include="Data\Tutorial09\lambertianPlusShadowsUtils.hlsli" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +62,11 @@
     <ProjectReference Include="..\Falcor\Framework\Source\Falcor.vcxproj">
       <Project>{3b602f0e-3834-4f73-b97d-7dfc91597a98}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\accumulate.ps.hlsl" />
+    <None Include="Data\aoTracing.rt.hlsl" />
+    <None Include="Data\lambertianPlusShadows.rt.hlsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0203F589-FD13-4919-9668-3EDB912E5D2F}</ProjectGuid>

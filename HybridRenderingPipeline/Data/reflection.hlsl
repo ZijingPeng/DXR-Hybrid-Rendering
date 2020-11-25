@@ -19,9 +19,9 @@
 #include "HostDeviceSharedMacros.h"
 
 // Include and import common Falcor utilities and data structures
-import Raytracing;
-import ShaderCommon;
-import Shading;                      // Shading functions, etc     
+__import Raytracing;
+__import ShaderCommon;
+__import Shading;                      // Shading functions, etc     
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "aoCommonUtils.hlsli"
@@ -29,7 +29,7 @@ import Shading;                      // Shading functions, etc
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ReflectRayPayload
 {
-	float hitDist;
+	float4 reflectColor;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -50,7 +50,7 @@ RWTexture2D<float4> gOutput;
 [shader("miss")]
 void ReflectMiss(inout ReflectRayPayload hitData : SV_RayPayload)
 {
-	gOutput[DispatchRaysIndex()] = float4(0, 0, 0, 1.0f);
+	gOutput[DispatchRaysIndex().xy] = float4(0, 0, 0, 1.0f);
 }
 
 [shader("anyhit")]
@@ -60,16 +60,13 @@ void ReflectAnyHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionA
 	if (alphaTestFails(attribs))
 		IgnoreHit();
 
-	// We update the hit distance with our current hitpoint
-	rayData.hitDist = RayTCurrent();
 }
 
 [shader("closesthit")]
 void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	uint2 idx = DispatchRaysIndex();
 	ShadingData shadeData = getShadingData(PrimitiveIndex(), attribs);
-	gOutput[idx] = float4(shadeData.diffuse, shadeData.opacity);
+	rayData.reflectColor = float4(0, 1, 0, 1);
 }
 
 
@@ -91,22 +88,25 @@ void ReflectRayGen()
 	float3 specular = gSpecMatl[launchIndex].xyz;
 	float roughness = gSpecMatl[launchIndex].w;
 
-	float3 view = worldPos.xyz - gCamera.PosW.xyz;
+	float3 view = worldPos.xyz - gCamera.posW.xyz;
 
-	if (worldPos.w != 0.0f && roughness < 0.2f)
+	if (worldPos.w != 0.0f && roughness <= 1.0f)
 	{
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
-		rayReflect.Direction = reflect(view, worldNorm);
+		rayReflect.Direction = reflect(view, worldNorm.xyz);
 		rayReflect.TMin = gMinT;
-		rayAO.TMax = 1e+38f;
-		ReflectRayPayload rayPayload = { 0 };
+		rayReflect.TMax = 1e+38f;
+		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
+		gOutput[launchIndex] = rayPayload.reflectColor;
+
 	}
 	else
 	{
 		gOutput[launchIndex] = gDiffuseMatl[launchIndex];
 	}
+
 
 	
 }

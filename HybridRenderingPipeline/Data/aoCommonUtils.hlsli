@@ -80,3 +80,13 @@ bool alphaTestFails(BuiltInTriangleIntersectionAttributes attribs)
 	// Test if this hit point fails a standard alpha test.  
 	return (baseColor.a < gMaterial.alphaThreshold);
 }
+
+// This function combines two Falcor-defined utility routines into one.  (That does not
+//       require the user to define an additional opaque data type 'VertexOut', which 
+//       is largely irrelevant since ShadingData contains all the important data from
+//       VertexOut)
+ShadingData getShadingData(uint primId, BuiltInTriangleIntersectionAttributes barys)
+{
+	VertexOut  vsOut = getVertexAttributes(primId, barys);
+	return prepareShadingData(vsOut, gMaterial, gCamera.posW);
+}

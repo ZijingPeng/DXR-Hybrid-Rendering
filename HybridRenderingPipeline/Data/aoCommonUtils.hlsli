@@ -88,5 +88,5 @@ bool alphaTestFails(BuiltInTriangleIntersectionAttributes attribs)
 ShadingData getShadingData(uint primId, BuiltInTriangleIntersectionAttributes barys)
 {
 	VertexOut  vsOut = getVertexAttributes(primId, barys);
-	return prepareShadingData(vsOut, gMaterial, gCamera.posW);
+	return prepareShadingData(vsOut, gMaterial, gCamera.posW, 0);
 }

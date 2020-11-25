@@ -66,7 +66,7 @@ void ReflectAnyHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionA
 void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	ShadingData shadeData = getShadingData(PrimitiveIndex(), attribs);
-	rayData.reflectColor = float4(0, 1, 0, 1);
+	rayData.reflectColor = float4(shadeData.diffuse, 1);
 }
 
 
@@ -84,13 +84,11 @@ void ReflectRayGen()
 	float4 worldPos = gPos[launchIndex];
 	float4 worldNorm = gNorm[launchIndex];
 
-	float3 diffuse = gDiffuseMatl[launchIndex].xyz;
-	float3 specular = gSpecMatl[launchIndex].xyz;
 	float roughness = gSpecMatl[launchIndex].w;
 
 	float3 view = worldPos.xyz - gCamera.posW.xyz;
 
-	if (worldPos.w != 0.0f && roughness <= 1.0f)
+	if (worldPos.w != 0.0f && roughness <= 0.5f)
 	{
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
@@ -104,9 +102,8 @@ void ReflectRayGen()
 	}
 	else
 	{
-		gOutput[launchIndex] = gDiffuseMatl[launchIndex];
+		gOutput[launchIndex] = float4(1, 1, 1, 1);
 	}
-
 
 	
 }

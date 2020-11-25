@@ -120,6 +120,9 @@
     <None Include="Data\shadowsUtils.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Data\reflection.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Passes">

@@ -16,6 +16,8 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "HostDeviceSharedMacros.h"
+
 // Include and import common Falcor utilities and data structures
 import Raytracing;
 import ShaderCommon;
@@ -25,7 +27,7 @@ import Shading;                      // Shading functions, etc
 #include "aoCommonUtils.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
-struct AORayPayload
+struct ReflectRayPayload
 {
 	float hitDist;
 };
@@ -33,25 +35,26 @@ struct AORayPayload
 // A constant buffer we'll fill in for our ray generation shader
 cbuffer RayGenCB
 {
-	float gAORadius;
 	uint  gFrameCount;
 	float gMinT;
-	uint  gNumRays;
 }
 
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
+Texture2D<float4> gDiffuseMatl;
+Texture2D<float4> gSpecMatl;
 RWTexture2D<float4> gOutput;
 
 
 [shader("miss")]
-void AoMiss(inout AORayPayload hitData : SV_RayPayload)
+void ReflectMiss(inout ReflectRayPayload hitData : SV_RayPayload)
 {
+	gOutput[DispatchRaysIndex()] = float4(0, 0, 0, 1.0f);
 }
 
 [shader("anyhit")]
-void AoAnyHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ReflectAnyHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Is this a transparent part of the surface?  If so, ignore this hit
 	if (alphaTestFails(attribs))
@@ -62,14 +65,16 @@ void AoAnyHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes 
 }
 
 [shader("closesthit")]
-void AoClosestHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	rayData.hitDist = RayTCurrent();
+	uint2 idx = DispatchRaysIndex();
+	ShadingData shadeData = getShadingData(PrimitiveIndex(), attribs);
+	gOutput[idx] = float4(shadeData.diffuse, shadeData.opacity);
 }
 
 
 [shader("raygeneration")]
-void AoRayGen()
+void ReflectRayGen()
 {
 	// Where is this ray on screen?
 	uint2 launchIndex = DispatchRaysIndex().xy;
@@ -82,39 +87,26 @@ void AoRayGen()
 	float4 worldPos = gPos[launchIndex];
 	float4 worldNorm = gNorm[launchIndex];
 
-	// Default ambient occlusion
-	float ambientOcclusion = float(gNumRays);
+	float3 diffuse = gDiffuseMatl[launchIndex].xyz;
+	float3 specular = gSpecMatl[launchIndex].xyz;
+	float roughness = gSpecMatl[launchIndex].w;
 
-	// Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
-	if (worldPos.w != 0.0f)  
+	float3 view = worldPos.xyz - gCamera.PosW.xyz;
+
+	if (worldPos.w != 0.0f && roughness < 0.2f)
 	{
-		// Start accumulating from zero if we don't hit the background
-		ambientOcclusion = 0.0f;
-
-		for (int i = 0; i < gNumRays; i++)
-		{
-			// Sample cosine-weighted hemisphere around the surface normal
-			float3 worldDir = getCosHemisphereSample(randSeed, worldNorm.xyz);
-
-			// Setup ambient occlusion ray
-			RayDesc rayAO;
-			rayAO.Origin = worldPos.xyz;
-			rayAO.Direction = worldDir;
-			rayAO.TMin = gMinT;
-			rayAO.TMax = gAORadius;
-
-			// Initialize the maximum hitT (which will be the return value if we hit no surfaces)
-			AORayPayload rayPayload = { gAORadius + 1.0f };
-
-			// Trace our ray
-			TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, hitProgramCount, 0, rayAO, rayPayload);
-
-			// If our hit is what we initialized it to, above, we hit no geometry (else we did hit a surface)
-			ambientOcclusion += (rayPayload.hitDist > gAORadius) ? 1.0f : 0.0f;
-		}
+		RayDesc rayReflect;
+		rayReflect.Origin = worldPos.xyz;
+		rayReflect.Direction = worldDir;
+		rayReflect.TMin = gMinT;
+		rayAO.TMax = 1e+38f;
+		ReflectRayPayload rayPayload = { 0 };
+		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 	}
+	else
+	{
+		gOutput[launchIndex] = gDiffuseMatl[launchIndex];
+	}
+
 	
-	// Save out our AO color
-	float aoColor = ambientOcclusion / float(gNumRays);
-	gOutput[launchIndex] = float4(aoColor, aoColor, aoColor, 1.0f);
 }

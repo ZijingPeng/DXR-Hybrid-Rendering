@@ -63,6 +63,11 @@
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\reflection.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{73E5866E-B56E-47A9-BB31-9D116843BC8C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

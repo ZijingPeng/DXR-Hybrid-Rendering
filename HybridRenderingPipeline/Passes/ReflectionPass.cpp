@@ -21,20 +21,20 @@
 // Some global vars, used to simplify changing shader location & entry points
 namespace {
 	// Where is our shader located?
-	const char* kFileRayTrace = "shadowPass.rt.hlsl";
+	const char* kFileRayTrace = "reflection.hlsl";
 
 	// What are the entry points in that shader for various ray tracing shaders?
-	const char* kEntryPointRayGen = "LambertShadowsRayGen";
-	const char* kEntryPointMiss0 = "ShadowMiss";
-	const char* kEntryAoAnyHit = "ShadowAnyHit";
-	const char* kEntryAoClosestHit = "ShadowClosestHit";
+	const char* kEntryPointRayGen = "ReflectRayGen";
+	const char* kEntryPointMiss0 = "ReflectMiss";
+	const char* kEntryAoAnyHit = "ReflectAnyHit";
+	const char* kEntryAoClosestHit = "ReflectClosestHit";
 };
 
 bool ReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
 	// Keep a copy of our resource manager; request needed buffer resources
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough" });
 	mpResManager->requestTextureResource(mAccumChannel);
 
 	// Set the default scene to load
@@ -67,11 +67,12 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	// Set our ray tracing shader variables 
 	auto rayGenVars = mpRays->getRayGenVars();
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
-
+	rayGenVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	rayGenVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
 	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
+	rayGenVars["gSpecMatl"] = mpResManager->getTexture("MaterialSpecRough");
 	rayGenVars["gOutput"] = pDstTex;
 
 	// Shoot our rays and shade our primary hit points

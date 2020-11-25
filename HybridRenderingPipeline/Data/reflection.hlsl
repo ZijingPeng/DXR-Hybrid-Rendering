@@ -97,7 +97,7 @@ void ReflectRayGen()
 	{
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
-		rayReflect.Direction = worldDir;
+		rayReflect.Direction = reflect(view, worldNorm);
 		rayReflect.TMin = gMinT;
 		rayAO.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { 0 };

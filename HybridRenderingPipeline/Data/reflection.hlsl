@@ -24,7 +24,7 @@ __import ShaderCommon;
 __import Shading;                      // Shading functions, etc     
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
-#include "aoCommonUtils.hlsli"
+#include "commonUtils.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ReflectRayPayload
@@ -83,7 +83,7 @@ void ReflectRayGen()
 	// Load the position and normal from our g-buffer
 	float4 worldPos = gPos[launchIndex];
 	float4 worldNorm = gNorm[launchIndex];
-
+	float4 diffuse = gDiffuseMatl[launchIndex];
 	float roughness = gSpecMatl[launchIndex].w;
 
 	float3 view = worldPos.xyz - gCamera.posW.xyz;
@@ -97,12 +97,13 @@ void ReflectRayGen()
 		rayReflect.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
-		gOutput[launchIndex] = rayPayload.reflectColor;
+		float3 fresnelR = FresnelSchlick(rayRflect.Direction, worldNorm, diffuse);
+		gOutput[launchIndex] = float4(fresnelR, 1) * rayPayload.reflectColor;
 
 	}
 	else
 	{
-		gOutput[launchIndex] = float4(1, 1, 1, 1);
+		gOutput[launchIndex] = float4(0, 0, 0, 1);
 	}
 
 	

@@ -28,6 +28,7 @@
     <ClCompile Include="Passes\ReflectionPass.cpp" />
     <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
+    <ClCompile Include="SVGFPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="Passes\FinalStagePass.h" />
     <ClInclude Include="Passes\ReflectionPass.h" />
     <ClInclude Include="Passes\ShadowPass.h" />
+    <ClInclude Include="SVGFPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Framework\FalcorSharedObjects\FalcorSharedObjects.vcxproj">
@@ -62,11 +64,44 @@
     <None Include="Data\shadowPass.rt.hlsl" />
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\reflection.hlsl">
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Data\SVGF\SVGFCommon.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Data\SVGF\SVGFReproject.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{73E5866E-B56E-47A9-BB31-9D116843BC8C}</ProjectGuid>

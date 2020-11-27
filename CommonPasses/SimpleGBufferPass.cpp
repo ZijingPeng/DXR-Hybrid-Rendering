@@ -21,7 +21,7 @@
 namespace {
 	// Where are our shaders located?
 	const char *kGbufVertShader = "CommonPasses\\gBuffer.vs.hlsl";
-    const char *kGbufFragShader = "CommonPasses\\gBuffer.ps.hlsl";
+  const char *kGbufFragShader = "CommonPasses\\gBuffer.ps.hlsl";
 };
 
 bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -34,7 +34,10 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 	mpResManager->requestTextureResource("WorldNormal");
 	mpResManager->requestTextureResource("MaterialDiffuse");
 	mpResManager->requestTextureResource("MaterialSpecRough");
-	mpResManager->requestTextureResource("MaterialExtraParams");
+	mpResManager->requestTextureResource("MaterialEmissive");
+  mpResManager->requestTextureResource("PosNormalFWidth", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("LinearZAndDeriv", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("MotiveVectors", ResourceFormat::RG32Float);
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
     // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
@@ -62,7 +65,8 @@ void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 {
 	// Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
 	Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
-		{ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams" }, // Names of color buffers
+		{ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough",
+      "MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors" }, // Names of color buffers
 		"Z-Buffer" );                                                                                      // Names of depth buffer
 
     // Failed to create a valid FBO?  We're done.

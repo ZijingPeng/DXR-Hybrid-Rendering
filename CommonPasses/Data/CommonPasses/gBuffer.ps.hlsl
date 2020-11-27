@@ -26,7 +26,10 @@ struct GBuffer
 	float4 wsNorm   : SV_Target1;
 	float4 matDif   : SV_Target2;
 	float4 matSpec  : SV_Target3;
-	float4 matExtra : SV_Target4;
+  float4 matEmissive : SV_Target4;
+  float2 posNormalFwidth : SV_Target5;
+  float2 linearZAndDeriv : SV_Target6;
+  float2 motionVec : SV_Target7;
 };
 
 // Our main entry point for the g-buffer fragment shader.
@@ -48,7 +51,18 @@ GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Posi
 	gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - gCamera.posW) );
 	gBufOut.matDif   = float4(hitPt.diffuse, hitPt.opacity);
 	gBufOut.matSpec  = float4(hitPt.specular, hitPt.linearRoughness);
-	gBufOut.matExtra = float4(hitPt.IoR, hitPt.doubleSidedMaterial ? 1.f : 0.f, 0.f, 0.f);
+  gBufOut.matEmissive = float4(hitPt.emissive, 0.f);
+  
+
+  float3 albedo = hitPt.diffuse;
+  float2 posNormalFwidth = float2(length(fwidth(hitPt.powW)), length(fwidth(hitPt.N)));
+  const float linearZ = vsOut.posH.z * vsOut.posH.w;
+  gBufOut.linearZAndDeriv = float2(linearZ, max(abs(ddx(linearZ)), abs(ddy(linearZ)))); 
+
+  int2 ipos = int2(vsOut.posH.xy);
+  const float2 pixelPos = ipos + float2(0.5, 0.5); // Current sample in pixel coords.
+  const float4 prevPosH = vsOut.prevPosH; // Sample in previous frame in clip space coords, no jittering applied.
+  gBufOut.motionVec = calcMotionVector(pixelPos, prevPosH, gRenderTargetDim) + float2(gCamera.jitterX, -gCamera.jitterY); // Remove camera jitter from motion vector
 
 	return gBufOut;
 }

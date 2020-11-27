@@ -66,7 +66,7 @@ protected:
 private:
   void computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
                                  Texture::SharedPtr pWorldNormalTexture);
-  void allocateFbos(uint2 dim);
+  void allocateFbos(glm::uvec2 dim);
   void computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
                             Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
                             Texture::SharedPtr pMotionVectorTexture,

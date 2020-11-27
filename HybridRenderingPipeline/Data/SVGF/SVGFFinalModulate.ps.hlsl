@@ -28,12 +28,9 @@
 import Shading;
 import SVGFCommon;
 
-cbuffer PerImageCB
-{
-    Texture2D   gAlbedo;
-    Texture2D   gEmission;
-    Texture2D   gIllumination;
-};
+Texture2D   gAlbedo;
+Texture2D   gEmission;
+Texture2D   gIllumination;
 
 float4 main(FullScreenPassVsOut vsOut) : SV_TARGET0
 {

@@ -29,13 +29,13 @@ import Shading;
 import MathHelpers;
 import SVGFCommon;
 
+Texture2D   gIllumination;
+Texture2D   gMoments;
+Texture2D   gHistoryLength;
+Texture2D   gLinearZAndNormal;
+
 cbuffer PerImageCB
 {
-    Texture2D   gIllumination;
-    Texture2D   gMoments;
-    Texture2D   gHistoryLength;
-    Texture2D   gLinearZAndNormal;
-
     float       gPhiColor;
     float       gPhiNormal;
 };

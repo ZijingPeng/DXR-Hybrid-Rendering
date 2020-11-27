@@ -46,7 +46,7 @@ namespace {
 // Define our constructor methods
 SVGFPass::SharedPtr SVGFPass::create(const std::string& bufferOut, const std::string &inputColorBuffer)
 {
-	return SharedPtr(new SVGFPass(bufferOut, )inputColorBuffer);
+	return SharedPtr(new SVGFPass(bufferOut, inputColorBuffer));
 }
 
 SVGFPass::SVGFPass(const std::string& bufferOut, const std::string &inputColorBuffer)
@@ -91,7 +91,7 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 	return true;
 }
 
-void SVGFPass::allocateFbos(uint2 dim)
+void SVGFPass::allocateFbos(glm::uvec2 dim)
 {
   {
     // Screen-size FBOs with 3 MRTs: one that is RGBA32F, one that is
@@ -101,26 +101,26 @@ void SVGFPass::allocateFbos(uint2 dim)
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
     desc.setColorTarget(1, Falcor::ResourceFormat::RG32Float);   // moments
     desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
-    mpCurReprojFbo  = Fbo::create2D(dim.x, dim.y, desc);
-    mpPrevReprojFbo = Fbo::create2D(dim.x, dim.y, desc);
+	mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
+    mpPrevReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   {
     // Screen-size RGBA32F buffer for linear Z, derivative, and packed normal
     Fbo::Desc desc;
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float);
-    mpLinearZAndNormalFbo = Fbo::create2D(dim.x, dim.y, desc);
+    mpLinearZAndNormalFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   {
     // Screen-size FBOs with 1 RGBA32F buffer
     Fbo::Desc desc;
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float);
-    mpPingPongFbo[0]  = Fbo::create2D(dim.x, dim.y, desc);
-    mpPingPongFbo[1]  = Fbo::create2D(dim.x, dim.y, desc);
-    mpFilteredPastFbo = Fbo::create2D(dim.x, dim.y, desc);
-    mpFilteredIlluminationFbo       = Fbo::create2D(dim.x, dim.y, desc);
-    mpFinalFbo        = Fbo::create2D(dim.x, dim.y, desc);
+    mpPingPongFbo[0]  = FboHelper::create2D(dim.x, dim.y, desc);
+    mpPingPongFbo[1]  = FboHelper::create2D(dim.x, dim.y, desc);
+    mpFilteredPastFbo = FboHelper::create2D(dim.x, dim.y, desc);
+    mpFilteredIlluminationFbo       = FboHelper::create2D(dim.x, dim.y, desc);
+    mpFinalFbo        = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   mBuffersNeedClear = true;
@@ -137,8 +137,8 @@ void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 
 void SVGFPass::resize(uint32_t width, uint32_t height)
 {
-	uint2 dim(width, height);
-  allocateFbos(dim);
+	glm::uvec2 dim(width, height);
+    allocateFbos(dim);
 }
 
 
@@ -156,29 +156,27 @@ void SVGFPass::clearBuffers(RenderContext* pRenderContext) {
 	mpResManager->clearTexture(mpResManager->getTexture(kInternalBufferPreviousMoments), glm::vec4(0.f));
 }
 
-}
-
 void SVGFPass::renderGui(Gui* pGui)
 {
   int dirty = 0;
-  dirty |= (int)widget.checkbox(mFilterEnabled ? "SVGF enabled" : "SVGF disabled", mFilterEnabled);
+  dirty |= (int)pGui->addCheckBox(mFilterEnabled ? "SVGF enabled" : "SVGF disabled", mFilterEnabled);
 
-  widget.text("");
-  widget.text("Number of filter iterations.  Which");
-  widget.text("    iteration feeds into future frames?");
-  dirty |= (int)widget.var("Iterations", mFilterIterations, 2, 10, 1);
-  dirty |= (int)widget.var("Feedback", mFeedbackTap, -1, mFilterIterations - 2, 1);
+  pGui->addText("");
+  pGui->addText("Number of filter iterations.  Which");
+  pGui->addText("    iteration feeds into future frames?");
+  dirty |= (int)pGui->addIntVar("Iterations", mFilterIterations, 2, 10, 1);
+  dirty |= (int)pGui->addIntVar("Feedback", mFeedbackTap, -1, mFilterIterations - 2, 1);
 
-  widget.text("");
-  widget.text("Contol edge stopping on bilateral fitler");
-  dirty |= (int)widget.var("For Color", mPhiColor, 0.0f, 10000.0f, 0.01f);
-  dirty |= (int)widget.var("For Normal", mPhiNormal, 0.001f, 1000.0f, 0.2f);
+  pGui->addText("");
+  pGui->addText("Contol edge stopping on bilateral fitler");
+  dirty |= (int)pGui->addFloatVar("For Color", mPhiColor, 0.0f, 10000.0f, 0.01f);
+  dirty |= (int)pGui->addFloatVar("For Normal", mPhiNormal, 0.001f, 1000.0f, 0.2f);
 
-  widget.text("");
-  widget.text("How much history should be used?");
-  widget.text("    (alpha; 0 = full reuse; 1 = no reuse)");
-  dirty |= (int)widget.var("Alpha", mAlpha, 0.0f, 1.0f, 0.001f);
-  dirty |= (int)widget.var("Moments Alpha", mMomentsAlpha, 0.0f, 1.0f, 0.001f);
+  pGui->addText("");
+  pGui->addText("How much history should be used?");
+  pGui->addText("    (alpha; 0 = full reuse; 1 = no reuse)");
+  dirty |= (int)pGui->addFloatVar("Alpha", mAlpha, 0.0f, 1.0f, 0.001f);
+  dirty |= (int)pGui->addFloatVar("Moments Alpha", mMomentsAlpha, 0.0f, 1.0f, 0.001f);
 
   if (dirty) mBuffersNeedClear = true;
 }
@@ -236,10 +234,10 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 
 
 	// Compute albedo * filtered illumination and add emission back in.
-  auto perImageCB = mpFinalModulate->getVars()["PerImageCB"];
-  perImageCB["gAlbedo"] = pAlbedoTexture;
-  perImageCB["gEmission"] = pEmissionTexture;
-  perImageCB["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+  auto shaderVars = mpFinalModulate->getVars();
+  shaderVars["gAlbedo"] = pAlbedoTexture;
+  shaderVars["gEmission"] = pEmissionTexture;
+  shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
   mpGfxState->setFbo(mpFinalFbo);
   mpFinalModulate->execute(pRenderContext, mpGfxState);
 
@@ -255,9 +253,9 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 void SVGFPass::computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
                                        Texture::SharedPtr pWorldNormalTexture)
 {
-  auto perImageCB = mpPackLinearZAndNormal->getVars();
-  perImageCB["PerImageCB"]["gLinearZ"] = pLinearZTexture;
-  perImageCB["PerImageCB"]["gNormal"] = pWorldNormalTexture;
+  auto shaderVars = mpPackLinearZAndNormal->getVars();
+  shaderVars["gLinearZ"] = pLinearZTexture;
+  shaderVars["gNormal"] = pWorldNormalTexture;
   mpGfxState->setFbo(mpLinearZAndNormalFbo);
   mpPackLinearZAndNormal->execute(pRenderContext, mpGfxState);
 }
@@ -268,23 +266,23 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
                                    Texture::SharedPtr pPositionNormalFwidthTexture,
                                    Texture::SharedPtr pPrevLinearZTexture)
 {
-  auto perImageCB = mpReprojection->getVars()["perImageCB"];
+  auto shaderVars = mpReprojection->getVars();
 
   // Setup textures for our reprojection shader pass
-  perImageCB["gMotion"]        = pMotionVectorTexture;
-  perImageCB["gColor"]         = pColorTexture;
-  perImageCB["gEmission"]      = pEmissionTexture;
-  perImageCB["gAlbedo"]        = pAlbedoTexture;
-  perImageCB["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
-  perImageCB["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
-  perImageCB["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
-  perImageCB["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
-  perImageCB["gPrevLinearZAndNormal"]   = pPrevLinearZTexture;
-  perImageCB["gPrevHistoryLength"] = mpPrevReprojFbo->getColorTexture(2);
+  shaderVars["gMotion"]        = pMotionVectorTexture;
+  shaderVars["gColor"]         = pColorTexture;
+  shaderVars["gEmission"]      = pEmissionTexture;
+  shaderVars["gAlbedo"]        = pAlbedoTexture;
+  shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
+  shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
+  shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
+  shaderVars["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gPrevLinearZAndNormal"]   = pPrevLinearZTexture;
+  shaderVars["gPrevHistoryLength"] = mpPrevReprojFbo->getColorTexture(2);
 
   // Setup variables for our reprojection pass
-  perImageCB["gAlpha"] = mAlpha;
-  perImageCB["gMomentsAlpha"] = mMomentsAlpha;
+  shaderVars["PerImageCB"]["gAlpha"] = mAlpha;
+  shaderVars["PerImageCB"]["gMomentsAlpha"] = mMomentsAlpha;
 
   mpGfxState->setFbo(mpCurReprojFbo);
   mpReprojection->execute(pRenderContext, mpGfxState);
@@ -292,36 +290,35 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
 
 void SVGFPass::computeFilteredMoments(RenderContext* pRenderContext)
 {
-  auto perImageCB = mpFilterMoments->getVars()["PerImageCB"];
+  auto shaderVars = mpFilterMoments->getVars();
 
-  perImageCB["gIllumination"]     = mpCurReprojFbo->getColorTexture(0);
-  perImageCB["gHistoryLength"]    = mpCurReprojFbo->getColorTexture(2);
-  perImageCB["gLinearZAndNormal"]          = mpLinearZAndNormalFbo->getColorTexture(0);
-  perImageCB["gMoments"]          = mpCurReprojFbo->getColorTexture(1);
+  shaderVars["gIllumination"]     = mpCurReprojFbo->getColorTexture(0);
+  shaderVars["gHistoryLength"]    = mpCurReprojFbo->getColorTexture(2);
+  shaderVars["gLinearZAndNormal"]          = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gMoments"]          = mpCurReprojFbo->getColorTexture(1);
 
-  perImageCB["gPhiColor"]  = mPhiColor;
-  perImageCB["gPhiNormal"]  = mPhiNormal;
+  shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
+  shaderVars["PerImageCB"]["gPhiNormal"]  = mPhiNormal;
 
-  mpGfxState->setFbo(mpPingPongFbo[0])
+  mpGfxState->setFbo(mpPingPongFbo[0]);
   mpFilterMoments->execute(pRenderContext, mpGfxState);
 }
 
 
 void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture)
 {
-  auto perImageCB = mpAtrous->getVars()["PerImageCB"];
-  perImageCB["gAlbedo"]        = pAlbedoTexture;
-  perImageCB["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
-  perImageCB["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
-  perImageCB["gPhiColor"]  = mPhiColor;
-  perImageCB["gPhiNormal"] = mPhiNormal;
+  auto shaderVars = mpAtrous->getVars();
+  shaderVars["gAlbedo"]        = pAlbedoTexture;
+  shaderVars["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
+  shaderVars["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
+  shaderVars["PerImageCB"]["gPhiNormal"] = mPhiNormal;
 
   for (int i = 0; i < mFilterIterations; i++)
   {
     Fbo::SharedPtr curTargetFbo = mpPingPongFbo[1];
-
-    perImageCB["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-    perImageCB["gStepSize"] = 1 << i;
+	shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+	shaderVars["PerImageCB"]["gStepSize"] = 1 << i;
     mpGfxState->setFbo(curTargetFbo);
     mpAtrous->execute(pRenderContext, mpGfxState);
 

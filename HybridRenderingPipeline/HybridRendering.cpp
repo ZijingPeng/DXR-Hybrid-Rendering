@@ -43,7 +43,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
 	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
 	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
-  pipeline->setPass(9, SVGFPass::create("finalOutput", ResourceManager::kOutputChannel));
+    pipeline->setPass(9, SVGFPass::create("finalOutput", ResourceManager::kOutputChannel));
 	//pipeline->setPass(9, SimpleAccumulationPass::create());
 
 	// Define a set of config / window parameters for our program

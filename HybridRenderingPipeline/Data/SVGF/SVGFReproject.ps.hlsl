@@ -36,19 +36,19 @@ bool isNaN(float f)
     return (u > 0x7F800000);           // greater than Inf is NaN
 }
 
+Texture2D   gMotion;
+Texture2D   gPositionNormalFwidth;
+Texture2D   gColor;
+Texture2D   gAlbedo;
+Texture2D   gEmission;
+Texture2D   gPrevIllum;
+Texture2D   gPrevMoments;
+Texture2D   gLinearZAndNormal;
+Texture2D   gPrevLinearZAndNormal;
+Texture2D   gPrevHistoryLength;
+
 cbuffer PerImageCB
 {
-    Texture2D   gMotion;
-    Texture2D   gPositionNormalFwidth;
-    Texture2D   gColor;
-    Texture2D   gAlbedo;
-    Texture2D   gEmission;
-    Texture2D   gPrevIllum;
-    Texture2D   gPrevMoments;
-    Texture2D   gLinearZAndNormal;
-    Texture2D   gPrevLinearZAndNormal;
-    Texture2D   gPrevHistoryLength;
-
     float       gAlpha;
     float       gMomentsAlpha;
 };

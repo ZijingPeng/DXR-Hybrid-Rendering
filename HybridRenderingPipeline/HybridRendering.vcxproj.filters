@@ -50,6 +50,7 @@
     <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="SVGFPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Passes\AmbientOcclusionPass.h">
@@ -100,6 +101,7 @@
     <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
+    <ClInclude Include="SVGFPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\aoCommonUtils.hlsli">
@@ -121,6 +123,24 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Data\reflection.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

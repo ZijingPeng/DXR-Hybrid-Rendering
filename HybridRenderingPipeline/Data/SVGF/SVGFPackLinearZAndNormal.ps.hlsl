@@ -29,11 +29,8 @@ import Shading;
 import MathHelpers;
 import SVGFCommon;
 
-cbuffer PerImageCB
-{
-    Texture2D gLinearZ;
-    Texture2D gNormal;
-};
+Texture2D gLinearZ;
+Texture2D gNormal;
 
 float4 main(FullScreenPassVsOut vsOut) : SV_TARGET0
 {

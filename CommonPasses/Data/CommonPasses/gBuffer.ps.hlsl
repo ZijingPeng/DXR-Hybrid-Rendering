@@ -32,6 +32,10 @@ struct GBuffer
   float2 motionVec : SV_Target7;
 };
 
+cbuffer PerImageCB {
+  float2 gRenderTargetDim;
+};
+
 // Our main entry point for the g-buffer fragment shader.
 GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Position)
 {
@@ -55,7 +59,7 @@ GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Posi
   
 
   float3 albedo = hitPt.diffuse;
-  float2 posNormalFwidth = float2(length(fwidth(hitPt.powW)), length(fwidth(hitPt.N)));
+  float2 posNormalFwidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
   const float linearZ = vsOut.posH.z * vsOut.posH.w;
   gBufOut.linearZAndDeriv = float2(linearZ, max(abs(ddx(linearZ)), abs(ddy(linearZ)))); 
 

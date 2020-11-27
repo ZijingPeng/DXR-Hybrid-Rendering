@@ -80,7 +80,8 @@ void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 
 	// Separately clear our diffuse color buffer to the background color, rather than black
 	pRenderContext->clearUAV(outputFbo->getColorTexture(2)->getUAV().get(), vec4(mBgColor, 1.0f));
-
+	auto shaderVars = mpRaster->getVars();
+	shaderVars["PerImageCB"]["gRenderTargetDim"] = float2(outputFbo->getWidth(), outputFbo->getHeight());
 	// Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
 	mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
 }

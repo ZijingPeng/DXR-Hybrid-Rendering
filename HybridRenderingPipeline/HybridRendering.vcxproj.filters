@@ -126,22 +126,28 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.slang">
+      <Filter>Shaders\SVGF</Filter>
     </None>
     <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\SVGF</Filter>
     </None>
     <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\SVGF</Filter>
     </None>
     <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFCommon.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\SVGF</Filter>
     </None>
     <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathConstants.hlsli">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathHelpers.slang">
+      <Filter>Shaders\SVGF</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +162,9 @@
     </Filter>
     <Filter Include="CommonPasses">
       <UniqueIdentifier>{8a822d0c-97ca-492f-b7b9-77121a99996c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\SVGF">
+      <UniqueIdentifier>{0c55c932-d563-4276-a33b-a89be7df5eb3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

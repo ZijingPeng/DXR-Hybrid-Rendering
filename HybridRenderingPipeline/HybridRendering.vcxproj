@@ -64,6 +64,7 @@
     <None Include="Data\shadowPass.rt.hlsl" />
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
+    <None Include="Data\SVGF\MathConstants.hlsli" />
     <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
@@ -79,7 +80,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <FileType>Document</FileType>
     </None>
-    <None Include="Data\SVGF\SVGFCommon.hlsl">
+    <None Include="Data\SVGF\SVGFCommon.slang">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
@@ -105,6 +106,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SVGF\MathHelpers.slang">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

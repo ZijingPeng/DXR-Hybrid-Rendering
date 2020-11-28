@@ -88,13 +88,14 @@ void ReflectRayGen()
 	float roughness = gSpecMatl[launchIndex].w;
 
 	float3 V = worldPos.xyz - gCamera.posW.xyz;
+	V = -V;
 	float3 N = worldNorm.xyz;
 
 	if (worldPos.w != 0.0f)
 	{
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
-		rayReflect.Direction = reflect(V, worldNorm.xyz);
+		rayReflect.Direction = reflect(-V, worldNorm.xyz);
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
@@ -109,7 +110,8 @@ void ReflectRayGen()
 		float G = GeometrySmith(N, V, L, roughness);
 		float3 nominator = NDF * G * F;
 		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
-		gOutput[launchIndex] = float4(nominater / denominator, 1) * rayPayload.reflectColor;
+		float NdotL = max(dot(N, L), 0.0);
+		gOutput[launchIndex] = float4(nominator / denominator, 1) * rayPayload.reflectColor * NdotL;
 
 	}
 	else

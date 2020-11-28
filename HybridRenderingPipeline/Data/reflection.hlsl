@@ -25,6 +25,7 @@ __import Shading;                      // Shading functions, etc
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "commonUtils.hlsli"
+#include "halton.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ReflectRayPayload
@@ -93,25 +94,31 @@ void ReflectRayGen()
 
 	if (worldPos.w != 0.0f)
 	{
+		HaltonState = hState;
+		haltonInit(hState, launchIndex.x, launchIndex.y, 1, 1, gFrameCount, 1);
+		float2 Xi = float2(frac(haltonNext(hState)), frac(haltonNext(hState)));
+		float3 H = ImportanceSampleGGX(Xi, N, roughness);
+		float3 L = normalize(2.0 * dot(V, H) * H - V);
+
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
-		rayReflect.Direction = reflect(-V, worldNorm.xyz);
+		rayReflect.Direction = L;
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-		float3 L = rayReflect.Direction;
-		float3 H = normalize(V + L);
+		//float3 L = rayReflect.Direction;
+		//float3 H = normalize(V + L);
 
-		// GGX
-		float3 F = FresnelSchlick(L, N, specular.xyz);
-		float NDF = DistributionGGX(N, H, roughness);
-		float G = GeometrySmith(N, V, L, roughness);
-		float3 nominator = NDF * G * F;
-		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
-		float NdotL = max(dot(N, L), 0.0);
-		gOutput[launchIndex] = float4(nominator / denominator, 1) * rayPayload.reflectColor * NdotL;
+		//// GGX
+		//float3 F = FresnelSchlick(L, N, specular.xyz);
+		//float NDF = DistributionGGX(N, H, roughness);
+		//float G = GeometrySmith(N, V, L, roughness);
+		//float3 nominator = NDF * G * F;
+		//float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
+		//float NdotL = max(dot(N, L), 0.0);
+		gOutput[launchIndex] = rayPayload.reflectColor * specular;
 
 	}
 	else

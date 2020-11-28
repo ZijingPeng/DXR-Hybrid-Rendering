@@ -59,6 +59,7 @@
     <None Include="Data\aoTracing.rt.hlsl" />
     <None Include="Data\aoCommonUtils.hlsli" />
     <None Include="Data\commonUtils.hlsli" />
+    <None Include="Data\halton.hlsli" />
     <None Include="Data\shadowsUtils.hlsli" />
     <None Include="Data\shadowPass.rt.hlsl" />
     <None Include="Data\lambert.ps.hlsl" />

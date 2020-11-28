@@ -53,7 +53,7 @@ SVGFPass::SVGFPass(const std::string& bufferOut, const std::string &inputColorBu
 	: ::RenderPass("SVGF Pass", "SVGF Options")
 {
 	mOutputTexName = bufferOut;
-  mInputTexName = inputColorBuffer;
+    mInputTexName = inputColorBuffer;
 }
 
 bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)

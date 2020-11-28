@@ -97,7 +97,7 @@ void ReflectRayGen()
 		rayReflect.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
-		float3 fresnelR = FresnelSchlick(rayRflect.Direction, worldNorm, diffuse);
+		float3 fresnelR = FresnelSchlick(rayReflect.Direction.xyz, worldNorm.xyz, diffuse.xyz);
 		gOutput[launchIndex] = float4(fresnelR, 1) * rayPayload.reflectColor;
 
 	}

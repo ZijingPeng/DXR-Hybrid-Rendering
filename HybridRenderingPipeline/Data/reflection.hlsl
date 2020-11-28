@@ -94,9 +94,12 @@ void ReflectRayGen()
 
 	if (worldPos.w != 0.0f)
 	{
-		HaltonState = hState;
+		HaltonState hState;
 		haltonInit(hState, launchIndex.x, launchIndex.y, 1, 1, gFrameCount, 1);
-		float2 Xi = float2(frac(haltonNext(hState)), frac(haltonNext(hState)));
+		uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
+		float rnd1 = frac(haltonNext(hState) + nextRand(randSeed));
+		float rnd2 = frac(haltonNext(hState) + nextRand(randSeed));
+		float2 Xi = float2(rnd1, rnd2);
 		float3 H = ImportanceSampleGGX(Xi, N, roughness);
 		float3 L = normalize(2.0 * dot(V, H) * H - V);
 

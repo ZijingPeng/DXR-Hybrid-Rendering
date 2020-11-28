@@ -16,6 +16,8 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#define PI 3.1415926
+
 // Utility function to get a vector perpendicular to an input vector 
 //    (from "Efficient Construction of Perpendicular Vectors Without Branching")
 float3 getPerpendicularVector(float3 u)
@@ -148,7 +150,7 @@ float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 	H.z = cosTheta;
 
 	// from tangent-space vector to world-space sample vector
-	float3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+	float3 up = abs(N.z) < 0.999 ? float3(0.0, 0.0, 1.0) : float3(1.0, 0.0, 0.0);
 	float3 tangent = normalize(cross(up, N));
 	float3 bitangent = cross(N, tangent);
 

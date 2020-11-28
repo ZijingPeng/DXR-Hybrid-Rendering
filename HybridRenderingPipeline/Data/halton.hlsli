@@ -12,10 +12,10 @@ void haltonInit(inout HaltonState hState,
 {
     hState.dimension = 2;
     hState.sequenceIndex = haltonIndex(x, y,
-        (frameId * numpaths + path) % (loop * numpaths));
+        (frameId * numPaths + path) % (loop * numPaths));
 }
 
-float haltonSample(uint dimension, uint index)
+float haltonSample(uint dimension, uint sampleIndex)
 {
     int base = 0;
 
@@ -79,7 +79,7 @@ float haltonNext(inout HaltonState state)
 uint haltonIndex(uint x, uint y, uint i)
 {
     return ((halton2Inverse(x % 256, 8) * 76545 +
-        halton3Inverse(y % 256, 6) * 110080) % m_increment) + i * 186624;
+        halton3Inverse(y % 256, 6) * 110080) % 81) + i * 186624;
 }
 
 // Modified from [pbrt]

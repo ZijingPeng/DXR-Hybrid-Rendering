@@ -84,21 +84,32 @@ void ReflectRayGen()
 	float4 worldPos = gPos[launchIndex];
 	float4 worldNorm = gNorm[launchIndex];
 	float4 diffuse = gDiffuseMatl[launchIndex];
+	float4 specular = gSpecMatl[launchIndex];
 	float roughness = gSpecMatl[launchIndex].w;
 
-	float3 view = worldPos.xyz - gCamera.posW.xyz;
+	float3 V = worldPos.xyz - gCamera.posW.xyz;
+	float3 N = worldNorm.xyz;
 
-	if (worldPos.w != 0.0f && roughness <= 0.5f)
+	if (worldPos.w != 0.0f)
 	{
 		RayDesc rayReflect;
 		rayReflect.Origin = worldPos.xyz;
-		rayReflect.Direction = reflect(view, worldNorm.xyz);
+		rayReflect.Direction = reflect(V, worldNorm.xyz);
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
-		float3 fresnelR = FresnelSchlick(rayReflect.Direction.xyz, worldNorm.xyz, diffuse.xyz);
-		gOutput[launchIndex] = float4(fresnelR, 1) * rayPayload.reflectColor;
+
+		float3 L = rayReflect.Direction;
+		float3 H = normalize(V + L);
+
+		// GGX
+		float3 F = FresnelSchlick(L, N, specular.xyz);
+		float NDF = DistributionGGX(N, H, roughness);
+		float G = GeometrySmith(N, V, L, roughness);
+		float3 nominator = NDF * G * F;
+		float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
+		gOutput[launchIndex] = float4(nominater / denominator, 1) * rayPayload.reflectColor;
 
 	}
 	else

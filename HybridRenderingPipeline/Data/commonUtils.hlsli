@@ -97,3 +97,38 @@ float3 FresnelSchlick(in float3 I, in float3 N, in float3 f0)
 	float cosi = saturate(dot(-I, N));
 	return f0 + (1 - f0) * pow(1 - cosi, 5);
 }
+
+// Copy from Learn OpenGL
+float DistributionGGX(in float3 N, in float3 H, in float roughness)
+{
+	float a = roughness * roughness;
+	float a2 = a * a;
+	float NdotH = max(dot(N, H), 0.0);
+	float NdotH2 = NdotH * NdotH;
+
+	float nom = a2;
+	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+	denom = PI * denom * denom;
+
+	return nom / denom;
+}
+
+float GeometrySchlickGGX(in float NdotV, in float roughness)
+{
+	float r = (roughness + 1.0);
+	float k = (r * r) / 8.0;
+
+	float nom = NdotV;
+	float denom = NdotV * (1.0 - k) + k;
+
+	return nom / denom;
+}
+float GeometrySmith(in float3 N, in float3 V, in float3 L, in float roughness)
+{
+	float NdotV = max(dot(N, V), 0.0);
+	float NdotL = max(dot(N, L), 0.0);
+	float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+	float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+	return ggx1 * ggx2;
+}

@@ -97,6 +97,7 @@ void AoRayGen()
 		{
 			// Sample cosine-weighted hemisphere around the surface normal
 			float3 worldDir = getCosHemisphereSample(randSeed, worldNorm.xyz);
+			randSeed++;
 
 			// Setup ambient occlusion ray
 			RayDesc rayAO;

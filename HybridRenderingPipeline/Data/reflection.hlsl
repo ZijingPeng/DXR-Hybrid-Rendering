@@ -121,7 +121,7 @@ void ReflectRayGen()
 		//float3 nominator = NDF * G * F;
 		//float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
 		//float NdotL = max(dot(N, L), 0.0);
-		gOutput[launchIndex] = rayPayload.reflectColor * specular;
+		gOutput[launchIndex] = rayPayload.reflectColor;//* specular;
 
 	}
 	else

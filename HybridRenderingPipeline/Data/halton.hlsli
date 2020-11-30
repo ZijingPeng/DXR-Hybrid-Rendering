@@ -79,7 +79,7 @@ float haltonNext(inout HaltonState state)
 uint haltonIndex(uint x, uint y, uint i)
 {
     return ((halton2Inverse(x % 256, 8) * 76545 +
-        halton3Inverse(y % 256, 6) * 110080) % 81) + i * 186624;
+        halton3Inverse(y % 256, 6) * 110080) % 3) + i * 186624;
 }
 
 // Modified from [pbrt]

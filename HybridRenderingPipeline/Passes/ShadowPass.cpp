@@ -67,15 +67,27 @@ void ShadowPass::execute(RenderContext* pRenderContext)
 	// Set our ray tracing shader variables 
 	auto rayGenVars = mpRays->getRayGenVars();
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
+	rayGenVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
+	rayGenVars["RayGenCB"]["gMaxCosineTheta"] = mMaxCosineTheta;
 
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	rayGenVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
-	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
 	rayGenVars["gOutput"] = pDstTex;
 
 	// Shoot our rays and shade our primary hit points
 	mpRays->execute(pRenderContext, mpResManager->getScreenSize());
+}
+
+
+void ShadowPass::renderGui(Gui* pGui)
+{
+	int dirty = 0;
+
+	dirty |= (int)pGui->addFloatVar("maxCosineTheta", mMaxCosineTheta, 0.8f, 1.0f, 0.005f, true);
+	
+	// If any of our UI parameters changed, let the pipeline know we're doing something different next frame
+	if (dirty) setRefreshFlag();
 }
 
 

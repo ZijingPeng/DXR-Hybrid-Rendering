@@ -16,6 +16,24 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+// Get a random vector in a cone centered around a specified normal direction.
+float3 getConeSample(inout uint randSeed, float3 hitNorm, float cosThetaMax)
+{
+	// Get 2 random numbers to select our sample with
+	float2 randVal = float2(nextRand(randSeed), nextRand(randSeed));
+
+	// Cosine weighted hemisphere sample from RNG
+	float3 bitangent = getPerpendicularVector(hitNorm);
+	float3 tangent = cross(bitangent, hitNorm);
+
+	float cosTheta = (1.0 - randVal.x) + randVal.x * cosThetaMax;
+	float r = sqrt(1.0 - cosTheta * cosTheta);
+	float phi = randVal.y * 2.0 * 3.14159265f;
+
+	// Get our cosine-weighted hemisphere lobe sample direction
+	return tangent * (r * cos(phi)) + bitangent * (r * sin(phi)) + hitNorm.xyz * cosTheta;
+}
+
 // A helper to extract important light data from internal Falcor data structures.  What's going on isn't particularly
 //     important -- any framework you use will expose internal scene data in some way.  Use your framework's utilities.
 void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3 lightIntensity, out float distToLight)
@@ -43,8 +61,8 @@ void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3
 float3 getPerpendicularVector(float3 u)
 {
 	float3 a = abs(u);
-	uint xm = ((a.x - a.y)<0 && (a.x - a.z)<0) ? 1 : 0;
-	uint ym = (a.y - a.z)<0 ? (1 ^ xm) : 0;
+	uint xm = ((a.x - a.y) < 0 && (a.x - a.z) < 0) ? 1 : 0;
+	uint ym = (a.y - a.z) < 0 ? (1 ^ xm) : 0;
 	uint zm = 1 ^ (xm | ym);
 	return cross(u, float3(xm, ym, zm));
 }
@@ -95,11 +113,12 @@ bool alphaTestFails(BuiltInTriangleIntersectionAttributes attribs)
 	// Run a Falcor helper to extract the current hit point's geometric data
 	VertexOut  vsOut = getVertexAttributes(PrimitiveIndex(), attribs);
 
-    // Extracts the diffuse color from the material (the alpha component is opacity)
-    ExplicitLodTextureSampler lodSampler = { 0 };  // Specify the tex lod/mip to use here
-    float4 baseColor = sampleTexture(gMaterial.resources.baseColor, gMaterial.resources.samplerState,
-        vsOut.texC, gMaterial.baseColor, EXTRACT_DIFFUSE_TYPE(gMaterial.flags), lodSampler);
-    
-    // Test if this hit point fails a standard alpha test.  
+	// Extracts the diffuse color from the material (the alpha component is opacity)
+	ExplicitLodTextureSampler lodSampler = { 0 };  // Specify the tex lod/mip to use here
+	float4 baseColor = sampleTexture(gMaterial.resources.baseColor, gMaterial.resources.samplerState,
+		vsOut.texC, gMaterial.baseColor, EXTRACT_DIFFUSE_TYPE(gMaterial.flags), lodSampler);
+
+	// Test if this hit point fails a standard alpha test.  
 	return (baseColor.a < gMaterial.alphaThreshold);
 }
+

@@ -21,17 +21,17 @@
 
 
 Texture2D<float4>   gAO;           
+Texture2D<float4>   gShadow;  
 Texture2D<float4>   gReflection; 
 Texture2D<float4>   gDirectLighting;
-Texture2D<float4>   gShadow;
 
 float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
     uint2 pixelPos = (uint2)pos.xy;
+    float4 shadow = gShadow[pixelPos];
     float4 reflection = gReflection[pixelPos];
 	float4 directLighting = gDirectLighting[pixelPos];
     float4 ambientOcclusion = gAO[pixelPos];
-	float4 shadow = gShadow[pixelPos];
 
 	float3 shadeColor;
 

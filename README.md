@@ -16,4 +16,5 @@
 
 - [Falcor](https://github.com/NVIDIAGameWorks/Falcor)
 - [Introduction To DirectX Raytracing](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html)
+- [GGX BRDF Sampling](https://learnopengl.com/PBR/IBL/Specular-IBL)
 

@@ -28,120 +28,120 @@ import Lights;                       // Light structures for our current scene
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "shadowsUtils.hlsli"
 
-// Payload for our primary rays.  We really don't use this for this g-buffer pass
-struct ShadowRayPayload
-{
-	int hitDist;
-};
-
-// A constant buffer we'll fill in for our ray generation shader
+// A constant buffer we'll populate from our C++ code 
 cbuffer RayGenCB
 {
-	float gMinT;
+	float gMinT;        // Min distance to start a ray to avoid self-occlusion
+	uint  gFrameCount;  // Frame counter, used to perturb random seed each frame
+	float gMaxCosineTheta;
 }
 
 // Input and out textures that need to be set by the C++ code
-Texture2D<float4> gPos;
-Texture2D<float4> gNorm;
-Texture2D<float4> gDiffuseMatl;
-Texture2D<float4> gSpecMatl;
-RWTexture2D<float4> gOutput;
+Texture2D<float4>   gPos;           // G-buffer world-space position
+Texture2D<float4>   gNorm;          // G-buffer world-space normal
+RWTexture2D<float4> gOutput;        // Output to store shaded result
+
+// Payload for our shadow rays. 
+struct ShadowRayPayload
+{
+	float visFactor;  // Will be 1.0 for fully lit, 0.0 for fully shadowed
+};
 
 
-float shadowRayVisibility( float3 origin, float3 direction, float minT, float maxT )
+// A utility function to trace a shadow ray and return 1 if no shadow and 0 if shadowed.
+//    -> Note:  This assumes the shadow hit programs and miss programs are index 0!
+float shadowRayVisibility(float3 origin, float3 direction, float minT, float maxT, uint randSeed)
 {
 	// Setup our shadow ray
 	RayDesc ray;
-	ray.Origin = origin;
-	ray.Direction = direction;
-	ray.TMin = minT;
-	ray.TMax = maxT; 
+	ray.Origin = origin;        // Where does it start?
+	ray.Direction = normalize(getConeSample(randSeed, direction, gMaxCosineTheta));
+	ray.TMin = minT;            // The closest distance we'll count as a hit
+	ray.TMax = maxT;            // The farthest distance we'll count as a hit
 
-	// Query if anything is between the current point and the light (i.e., at maxT) 
-	ShadowRayPayload rayPayload = { maxT + 1.0f }; 
-	TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, hitProgramCount, 0, ray, rayPayload);
+	// Our shadow rays are *assumed* to hit geometry; this miss shader changes this to 1.0 for "visible"
+	ShadowRayPayload payload = { 0.0f };
 
-	// Check if anyone was closer than our maxT distance (in which case we're occluded)
-	return (rayPayload.hitDist > maxT) ? 1.0f : 0.0f;
+	// Query if anything is between the current point and the light
+	TraceRay(gRtScene,
+		RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+		0xFF, 0, hitProgramCount, 0, ray, payload);
+
+	// Return our ray payload (which is 1 for visible, 0 for occluded)
+	return payload.visFactor;
 }
 
+
+// What code is executed when our ray misses all geometry?
 [shader("miss")]
 void ShadowMiss(inout ShadowRayPayload rayData)
 {
+	// If we miss all geometry, then the light is visibile
+	rayData.visFactor = 1.0f;
 }
 
+// What code is executed when our ray hits a potentially transparent surface?
 [shader("anyhit")]
 void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	// Run a Falcor helper to extract the hit point's geometric data
-	VertexOut  vsOut = getVertexAttributes(PrimitiveIndex(), attribs);
-
-    // Extracts the diffuse color from the material (the alpha component is opacity)
-    ExplicitLodTextureSampler lodSampler = { 0 };  // Specify the tex lod/mip to use here
-    float4 baseColor = sampleTexture(gMaterial.resources.baseColor, gMaterial.resources.samplerState,
-        vsOut.texC, gMaterial.baseColor, EXTRACT_DIFFUSE_TYPE(gMaterial.flags), lodSampler);
-
-	// Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
-	if (baseColor.a < gMaterial.alphaThreshold)
+	// Is this a transparent part of the surface?  If so, ignore this hit
+	if (alphaTestFails(attribs))
 		IgnoreHit();
-
-	// We update the hit distance with our current hitpoint
-	rayData.hitDist = RayTCurrent();
 }
 
+// What code is executed when we have a new closest hitpoint?
 [shader("closesthit")]
 void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	rayData.hitDist = RayTCurrent();
 }
 
 
+// How do we shade our g-buffer and generate shadow rays?
 [shader("raygeneration")]
 void LambertShadowsRayGen()
 {
-	// Where is this ray on screen?
+	// Get our pixel's position on the screen
 	uint2 launchIndex = DispatchRaysIndex().xy;
-	uint2 launchDim   = DispatchRaysDimensions().xy;
+	uint2 launchDim = DispatchRaysDimensions().xy;
 
-	// Load g-buffer data
-	float4 worldPos     = gPos[launchIndex];
-	float4 worldNorm    = gNorm[launchIndex];
-	float4 difMatlColor = gDiffuseMatl[launchIndex];
-
-	// We're only doing Lambertian, but sometimes Falcor gives a black Lambertian color.
-	//    There, this shader uses the spec color for our Lambertian color.
-	float4 specMatlColor = gSpecMatl[launchIndex];
-	if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
+	// Load g-buffer data:  world-space position, normal, and diffuse color
+	float4 worldPos = gPos[launchIndex];
+	float4 worldNorm = gNorm[launchIndex];
 
 	// If we don't hit any geometry, our difuse material contains our background color.
-	float3 shadeColor = difMatlColor.rgb;
+	float3 shadeColor = float3(0.0);
 
-	// Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
-  if (worldPos.w == 0.0f) {
-    gOutput[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
-    return;
-  }
+	// Initialize our random number generator
+	uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
 
-		// We're going to accumulate contributions from multiple lights, so zero our our sum
-  shadeColor = float3(0.0, 0.0, 0.0);
-  float isHit = 0.0f;
+	float shadowMult = 0.0;
 
-  for (int lightIndex = 0; lightIndex < gLightsCount; lightIndex++)
-  {
-    float distToLight;
-    float3 lightIntensity;
-    float3 toLight;
-    // A helper (that queries the Falcor scene to get needed data about this light)
-    getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
+	if (worldPos.w == 0.0f) {
+		gOutput[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
+		return;
+	}
 
-    // Compute our lambertion term (L dot N)
-    float LdotN = saturate(dot(worldNorm.xyz, toLight));
+	// Our camera sees the background if worldPos.w is 0, only do diffuse shading elsewhere
+	if (worldPos.w != 0.0f)
+	{
+		int lightToSample = min(int(nextRand(randSeed) * gLightsCount), gLightsCount - 1);
 
-    // Shoot our ray
-    float shadowMult = shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
-    isHit += shadowMult;
-  }
-	
-	// Save out our AO color
-	gOutput[launchIndex] = isHit > 0.0f ? 1.0f : 0.0f;
+		// We need to query our scene to find info about the current light
+		float distToLight;      // How far away is it?
+		float3 lightIntensity;  // What color is it?
+		float3 toLight;         // What direction is it from our current pixel?
+
+		// A helper (from the included .hlsli) to query the Falcor scene to get this data
+		getLightData(lightToSample, worldPos.xyz, toLight, lightIntensity, distToLight);
+
+		// Compute our lambertion term (L dot N)
+		float LdotN = saturate(dot(worldNorm.xyz, toLight));
+
+		// Shoot our ray.  Since we're randomly sampling lights, divide by the probability of sampling
+		//    (we're uniformly sampling, so this probability is: 1 / #lights) 
+		shadowMult = float(gLightsCount) * shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight, randSeed);
+	}
+
+	// Save out our final shaded
+	gOutput[launchIndex] = float4(float3(shadowMult), 1.0f);
 }

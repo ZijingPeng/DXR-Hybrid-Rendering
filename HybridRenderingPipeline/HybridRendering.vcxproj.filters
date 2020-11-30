@@ -50,6 +50,12 @@
     <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="Passes\SVGFPass.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
+    <ClCompile Include="Passes\ComparePass.cpp">
+      <Filter>Passes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Passes\AmbientOcclusionPass.h">
@@ -100,6 +106,12 @@
     <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
+    <ClInclude Include="Passes\SVGFPass.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
+    <ClInclude Include="Passes\ComparePass.h">
+      <Filter>Passes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\aoCommonUtils.hlsli">
@@ -127,6 +139,31 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Data\halton.hlsli">
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.slang">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathConstants.hlsli">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathHelpers.slang">
+      <Filter>Shaders\SVGF</Filter>
+    </None>
+    <None Include="Data\compare.ps.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -142,6 +179,9 @@
     </Filter>
     <Filter Include="CommonPasses">
       <UniqueIdentifier>{8a822d0c-97ca-492f-b7b9-77121a99996c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\SVGF">
+      <UniqueIdentifier>{0c55c932-d563-4276-a33b-a89be7df5eb3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -23,11 +23,13 @@
     <ClCompile Include="..\SharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="..\SharedUtils\SimpleVars.cpp" />
     <ClCompile Include="Passes\AmbientOcclusionPass.cpp" />
+    <ClCompile Include="Passes\ComparePass.cpp" />
     <ClCompile Include="Passes\DirectLightingPass.cpp" />
     <ClCompile Include="Passes\FinalStagePass.cpp" />
     <ClCompile Include="Passes\ReflectionPass.cpp" />
     <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
+    <ClCompile Include="Passes\SVGFPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
@@ -42,10 +44,12 @@
     <ClInclude Include="..\SharedUtils\SceneLoaderWrapper.h" />
     <ClInclude Include="..\SharedUtils\SimpleVars.h" />
     <ClInclude Include="Passes\AmbientOcclusionPass.h" />
+    <ClInclude Include="Passes\ComparePass.h" />
     <ClInclude Include="Passes\DirectLightingPass.h" />
     <ClInclude Include="Passes\FinalStagePass.h" />
     <ClInclude Include="Passes\ReflectionPass.h" />
     <ClInclude Include="Passes\ShadowPass.h" />
+    <ClInclude Include="Passes\SVGFPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Framework\FalcorSharedObjects\FalcorSharedObjects.vcxproj">
@@ -62,9 +66,62 @@
     <None Include="Data\shadowPass.rt.hlsl" />
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
+    <None Include="Data\SVGF\MathConstants.hlsli" />
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\reflection.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.slang">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SVGF\MathHelpers.slang">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\compare.ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

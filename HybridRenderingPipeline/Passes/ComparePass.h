@@ -15,28 +15,45 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
-// Some shared Falcor stuff for talking between CPU and GPU code
-#include "HostDeviceSharedMacros.h"
-#include "HostDeviceData.h"      
 
+#pragma once
+#include "../SharedUtils/RenderPass.h"
+#include "../SharedUtils/SimpleVars.h"
+#include "../SharedUtils/FullscreenLaunch.h"
 
-Texture2D<float4>   gAO;           
-Texture2D<float4>   gReflection; 
-Texture2D<float4>   gDirectLighting;
-Texture2D<float4>   gShadow;
-
-float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
+class ComparePass : public ::RenderPass, inherit_shared_from_this<::RenderPass, ComparePass>
 {
-    uint2 pixelPos = (uint2)pos.xy;
-    float4 reflection = gReflection[pixelPos];
-	float4 directLighting = gDirectLighting[pixelPos];
-    float4 ambientOcclusion = gAO[pixelPos];
-	float4 shadow = gShadow[pixelPos];
+public:
+	using SharedPtr = std::shared_ptr<ComparePass>;
+	using SharedConstPtr = std::shared_ptr<const ComparePass>;
 
-	float3 shadeColor;
+	static SharedPtr create() { return SharedPtr(new ComparePass()); }
+	virtual ~ComparePass() = default;
 
-	// Todo: reflection
-	shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
+protected:
+	ComparePass();
 
-	return float4(shadeColor, 1.0f);
-}
+	// Implementation of SimpleRenderPass interface
+	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+	void execute(RenderContext* pRenderContext) override;
+	void renderGui(Gui* pGui) override;
+	void resize(uint32_t width, uint32_t height) override;
+  void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
+
+	// Override some functions that provide information to the RenderPipeline class
+	bool appliesPostprocess() override { return true; }
+	bool hasAnimation() override { return false; }
+
+	// Information about the rendering texture we're accumulating into
+  Gui::DropdownList mLeftBuffers;
+  Gui::DropdownList mRightBuffers;  
+  uint32_t          mSelectLeft = 0xFFFFFFFFu;
+  uint32_t          mSelectRight = 0xFFFFFFFFu;
+  
+
+
+	// State for our accumulation shader
+	FullscreenLaunch::SharedPtr   mpCompareShader;
+	GraphicsState::SharedPtr      mpGfxState;
+	Fbo::SharedPtr                mpInternalFbo;
+};

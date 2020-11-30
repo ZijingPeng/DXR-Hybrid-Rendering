@@ -23,10 +23,11 @@
 #include "Passes/ReflectionPass.h"
 #include "Passes/DirectLightingPass.h"
 #include "Passes/FinalStagePass.h"
+#include "Passes/SVGFPass.h"
+#include "Passes/ComparePass.h"
 #include "../CommonPasses/SimpleGBufferPass.h"
 #include "../CommonPasses/SimpleAccumulationPass.h"
 #include "../CommonPasses/CopyToOutputPass.h"
-#include "./SVGFPass.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -54,7 +55,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	pipeline->setPass(4, DirectLightingPass::create("directLightingChannel"));
 	pipeline->setPass(5, FinalStagePass::create("finalOutput"));
 	pipeline->setPass(6, SVGFPass::create("filteredOutput", "finalOutput"));
-	pipeline->setPass(7, CopyToOutputPass::create());
+	//pipeline->setPass(7, CopyToOutputPass::create());
+	pipeline->setPass(7, ComparePass::create());
 
 	// Define a set of config / window parameters for our program
     SampleConfig config;

@@ -37,7 +37,7 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 
 	// Todo: reflection
 	//shadeColor = (directLighting * ambientOcclusion * shadow).rgb + reflection.rgb;
-	//shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
-	shadeColor = reflection.rgb;
+	shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
+	//shadeColor = reflection.rgb;
 	return float4(shadeColor, 1.0f);
 }

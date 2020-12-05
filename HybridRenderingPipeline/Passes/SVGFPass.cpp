@@ -101,7 +101,7 @@ void SVGFPass::allocateFbos(glm::uvec2 dim)
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
     desc.setColorTarget(1, Falcor::ResourceFormat::RG32Float);   // moments
     desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
-	mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
+	  mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpPrevReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
@@ -137,7 +137,7 @@ void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 
 void SVGFPass::resize(uint32_t width, uint32_t height)
 {
-	glm::uvec2 dim(width, height);
+	  glm::uvec2 dim(width, height);
     allocateFbos(dim);
 }
 
@@ -317,8 +317,8 @@ void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture
   for (int i = 0; i < mFilterIterations; i++)
   {
     Fbo::SharedPtr curTargetFbo = mpPingPongFbo[1];
-	shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-	shaderVars["PerImageCB"]["gStepSize"] = 1 << i;
+    shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+    shaderVars["PerImageCB"]["gStepSize"] = 1 << i;
     mpGfxState->setFbo(curTargetFbo);
     mpAtrous->execute(pRenderContext, mpGfxState);
 

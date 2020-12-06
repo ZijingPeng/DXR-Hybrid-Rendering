@@ -39,7 +39,7 @@ float shadowRayVisibility(float3 origin, float3 direction, float minT, float max
 	// Query if anything is between the current point and the light
 	TraceRay(gRtScene,
 		RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
-		0xFF, 0, hitProgramCount, 0, ray, payload);
+		0xFF, 1, hitProgramCount, 1, ray, payload);
 
 	// Return our ray payload (which is 1 for visible, 0 for occluded)
 	return payload.visFactor;
@@ -55,7 +55,7 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 
 // What code is executed when our ray hits a potentially transparent surface?
 [shader("anyhit")]
-void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltinIntersectionAttribs attribs)
+void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Is this a transparent part of the surface?  If so, ignore this hit
 	if (alphaTestFails(attribs))
@@ -64,6 +64,6 @@ void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltinIntersectionAttribs att
 
 // What code is executed when we have a new closest hitpoint?
 [shader("closesthit")]
-void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltinIntersectionAttribs attribs)
+void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 }

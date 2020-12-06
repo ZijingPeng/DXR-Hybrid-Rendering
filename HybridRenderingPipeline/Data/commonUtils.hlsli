@@ -29,6 +29,26 @@ float3 getPerpendicularVector(float3 u)
 	return cross(u, float3(xm, ym, zm));
 }
 
+void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3 lightIntensity, out float distToLight)
+{
+	// Use built-in Falcor functions and data structures to fill in a LightSample data structure
+	//   -> See "Lights.slang" for it's definition
+	LightSample ls;
+
+	// Is it a directional light?
+	if (gLights[index].type == LightDirectional)
+		ls = evalDirectionalLight(gLights[index], hitPos);
+
+	// No?  Must be a point light.
+	else
+		ls = evalPointLight(gLights[index], hitPos);
+
+	// Convert the LightSample structure into simpler data
+	toLight = normalize(ls.L);
+	lightIntensity = ls.diffuse;
+	distToLight = length(ls.posW - hitPos);
+}
+
 // Generates a seed for a random number generator from 2 inputs plus a backoff
 uint initRand(uint val0, uint val1, uint backoff = 16)
 {

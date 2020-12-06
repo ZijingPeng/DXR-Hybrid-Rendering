@@ -32,6 +32,7 @@ __import Lights;                       // Light structures for our current scene
 struct ReflectRayPayload
 {
 	float4 reflectColor;
+	uint rndSeed;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -39,7 +40,7 @@ cbuffer RayGenCB
 {
 	uint  gFrameCount;
 	float gMinT;
-	uint rndSeed;
+	
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -78,7 +79,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float3 V = shadeData.V;
 	float3 dif = shadeData.diffuse;
 	float3 spec = shadeData.specular;
-	float rough = shadeData.roughness
+	float rough = shadeData.roughness;
 
 	int lightToSample = min(int(nextRand(rayData.rndSeed) * gLightsCount), gLightsCount - 1);
 	// Query the scene to find info about the randomly selected light
@@ -105,7 +106,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float3 ggxTerm = D * G * F / (4 * NdotV /* * NdotL */);
 
 	// Compute our final color (combining diffuse lobe plus specular GGX lobe)
-	rayData.reflectColor = shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI);
+	rayData.reflectColor = float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
 }
 
 
@@ -155,8 +156,7 @@ void ReflectRayGen()
 		rayReflect.Direction = L;
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
-		rayReflect.rndSeed = randSeed;
-		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1) };
+		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
 		
@@ -164,7 +164,7 @@ void ReflectRayGen()
 		float3 geoN = normalize(extraData.yzw);
 		if (dot(geoN, V) <= 0.0f) geoN = -geoN;
 
-		float3 bounceColor = rayPayload.reflectColor;
+		float3 bounceColor = rayPayload.reflectColor.xyz;
 		if (dot(geoN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
 
 		// Compute some dot products needed for shading
@@ -173,15 +173,15 @@ void ReflectRayGen()
 		float  LdotH = saturate(dot(L, H));
 
 		// Evaluate our BRDF using a microfacet BRDF model
-		float  D = ggxNormalDistribution(NdotH, rough);          // The GGX normal distribution
-		float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);   // Use Schlick's masking term approx
-		float3 F = schlickFresnel(spec, LdotH);                  // Use Schlick's approx to Fresnel
+		float  D = ggxNormalDistribution(NdotH, roughness);          // The GGX normal distribution
+		float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);   // Use Schlick's masking term approx
+		float3 F = schlickFresnel(specular.xyz, LdotH);                  // Use Schlick's approx to Fresnel
 		float3 ggxTerm = D * G * F / (4 * NdotL * NdotV);        // The Cook-Torrance microfacet BRDF
 
 		// What's the probability of sampling vector H from getGGXMicrofacet()?
 		float  ggxProb = D * NdotH / (4 * LdotH);
 
-		float probDiffuse = probabilityToSampleDiffuse(diffuse, specular);
+		float probDiffuse = probabilityToSampleDiffuse(diffuse.xyz, specular.xyz);
 		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
 		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
 	}

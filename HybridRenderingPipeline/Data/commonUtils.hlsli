@@ -93,11 +93,12 @@ ShadingData getShadingData(uint primId, BuiltInTriangleIntersectionAttributes ba
 	return prepareShadingData(vsOut, gMaterial, gCamera.posW, 0);
 }
 
-// Fresnel reflectance - schlick approximation.
-float3 FresnelSchlick(in float3 I, in float3 N, in float3 f0)
+/* ------------------ GGX Microfacet BRDF -------------------------- */
+
+// This function can be used for "F" in the Cook-Torrance model:  D*G*F / (4*NdotL*NdotV)
+float3 schlickFresnel(float3 f0, float u)
 {
-	float cosi = saturate(dot(-I, N));
-	return f0 + (1 - f0) * pow(1 - cosi, 5);
+	return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - u, 5.0f);
 }
 
 // Copy from Learn OpenGL

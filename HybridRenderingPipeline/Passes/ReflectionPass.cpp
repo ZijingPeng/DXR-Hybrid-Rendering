@@ -26,15 +26,19 @@ namespace {
 	// What are the entry points in that shader for various ray tracing shaders?
 	const char* kEntryPointRayGen = "ReflectRayGen";
 	const char* kEntryPointMiss0 = "ReflectMiss";
-	const char* kEntryAoAnyHit = "ReflectAnyHit";
-	const char* kEntryAoClosestHit = "ReflectClosestHit";
+	const char* kEntryReflectAnyHit = "ReflectAnyHit";
+	const char* kEntryReflectClosestHit = "ReflectClosestHit";
+
+	const char* kEntryPointMiss1 = "ShadowMiss";
+	const char* kEntryShadowAnyHit = "ShadowAnyHit";
+	const char* kEntryShadowClosestHit = "ShadowClosestHit";
 };
 
 bool ReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
 	// Keep a copy of our resource manager; request needed buffer resources
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams" });
 	mpResManager->requestTextureResource(mAccumChannel);
 
 	// Set the default scene to load
@@ -42,8 +46,14 @@ bool ReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
+	// Add ray type #0 (reflection rays)
 	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-	mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
+	mpRays->addHitShader(kFileRayTrace, kEntryReflectClosestHit, kEntryReflectAnyHit);
+
+	// Add ray type #1 (shadow rays)
+	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss1);
+	mpRays->addHitShader(kFileRayTrace, kEntryShadowClosestHit, kEntryShadowAnyHit);
+
 	mpRays->compileRayProgram();
 	if (mpScene) mpRays->setScene(mpScene);
 	return true;
@@ -73,6 +83,7 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
 	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
 	rayGenVars["gSpecMatl"] = mpResManager->getTexture("MaterialSpecRough");
+	rayGenVars["gExtraMatl"] = mpResManager->getTexture("MaterialExtraParams");
 	rayGenVars["gOutput"] = pDstTex;
 
 	// Shoot our rays and shade our primary hit points

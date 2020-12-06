@@ -101,39 +101,28 @@ float3 schlickFresnel(float3 f0, float u)
 	return f0 + (float3(1.0f, 1.0f, 1.0f) - f0) * pow(1.0f - u, 5.0f);
 }
 
-// Copy from Learn OpenGL
-float DistributionGGX(in float3 N, in float3 H, in float roughness)
+float ggxNormalDistribution(float NdotH, float roughness)
 {
-	float a = roughness * roughness;
-	float a2 = a * a;
-	float NdotH = max(dot(N, H), 0.0);
-	float NdotH2 = NdotH * NdotH;
-
-	float nom = a2;
-	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-	denom = 3.1415926 * denom * denom;
-
-	return nom / denom;
+	float a2 = roughness * roughness;
+	float d = ((NdotH * a2 - NdotH) * NdotH + 1);
+	return a2 / max(0.001f, (d * d * PI));
 }
 
-float GeometrySchlickGGX(in float NdotV, in float roughness)
+float ggxSchlickMaskingTerm(float NdotL, float NdotV, float roughness)
 {
-	float r = (roughness + 1.0);
-	float k = (r * r) / 8.0;
+	// Karis notes they use alpha / 2 (or roughness^2 / 2)
+	float k = roughness * roughness / 2;
 
-	float nom = NdotV;
-	float denom = NdotV * (1.0 - k) + k;
+	// Karis also notes they can use the following equation, but only for analytical lights
+	//float k = (roughness + 1)*(roughness + 1) / 8; 
 
-	return nom / denom;
-}
-float GeometrySmith(in float3 N, in float3 V, in float3 L, in float roughness)
-{
-	float NdotV = max(dot(N, V), 0.0);
-	float NdotL = max(dot(N, L), 0.0);
-	float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-	float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+	// Compute G(v) and G(l).  These equations directly from Schlick 1994
+	//     (Though note, Schlick's notation is cryptic and confusing.)
+	float g_v = NdotV / (NdotV * (1 - k) + k);
+	float g_l = NdotL / (NdotL * (1 - k) + k);
 
-	return ggx1 * ggx2;
+	// Return G(v) * G(l)
+	return g_v * g_l;
 }
 
 float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
@@ -157,4 +146,13 @@ float3 ImportanceSampleGGX(float2 Xi, float3 N, float roughness)
 
 	float3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
 	return normalize(sampleVec);
+}
+
+// Our material has have both a diffuse and a specular lobe.  
+//     With what probability should we sample the diffuse one?
+float probabilityToSampleDiffuse(float3 difColor, float3 specColor)
+{
+	float lumDiffuse = max(0.01f, luminance(difColor.rgb));
+	float lumSpecular = max(0.01f, luminance(specColor.rgb));
+	return lumDiffuse / (lumDiffuse + lumSpecular);
 }

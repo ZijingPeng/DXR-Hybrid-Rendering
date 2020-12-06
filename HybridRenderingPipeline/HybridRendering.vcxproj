@@ -68,6 +68,7 @@
     <None Include="Data\shadowPass.rt.hlsl" />
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
+    <None Include="Data\standardShadowRay.hlsli" />
     <None Include="Data\SVGF\MathConstants.hlsli" />
     <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
   </ItemGroup>

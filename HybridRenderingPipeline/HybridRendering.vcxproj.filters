@@ -1,187 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="Passes\AmbientOcclusionPass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\FinalStagePass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\ReflectionPass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\ShadowPass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\DirectLightingPass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\FullscreenLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\RasterLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\RayLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\RenderingPipeline.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\RenderPass.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\ResourceManager.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharedUtils\SceneLoaderWrapper.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
+    <ClCompile Include="..\CommonPasses\CopyToOutputPass.cpp" />
+    <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="..\CommonPasses\SimpleGBufferPass.cpp" />
+    <ClCompile Include="..\SharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="..\SharedUtils\RasterLaunch.cpp" />
+    <ClCompile Include="..\SharedUtils\RayLaunch.cpp" />
+    <ClCompile Include="..\SharedUtils\RenderingPipeline.cpp" />
+    <ClCompile Include="..\SharedUtils\RenderPass.cpp" />
+    <ClCompile Include="..\SharedUtils\ResourceManager.cpp" />
+    <ClCompile Include="..\SharedUtils\SceneLoaderWrapper.cpp" />
+    <ClCompile Include="..\SharedUtils\SimpleVars.cpp" />
+    <ClCompile Include="Passes\AmbientOcclusionPass.cpp" />
+    <ClCompile Include="Passes\ComparePass.cpp" />
+    <ClCompile Include="Passes\DirectLightingPass.cpp" />
+    <ClCompile Include="Passes\FinalStagePass.cpp" />
+    <ClCompile Include="Passes\ReflectionPass.cpp" />
+    <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
-    <ClCompile Include="..\SharedUtils\SimpleVars.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CommonPasses\CopyToOutputPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CommonPasses\SimpleGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\SVGFPass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
-    <ClCompile Include="Passes\ComparePass.cpp">
-      <Filter>Passes</Filter>
-    </ClCompile>
+    <ClCompile Include="Passes\SVGFPass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Passes\AmbientOcclusionPass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\FinalStagePass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\ReflectionPass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\ShadowPass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\DirectLightingPass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\FullscreenLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\RasterLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\RayLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\RenderingPipeline.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\RenderPass.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\ResourceManager.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\SceneLoaderWrapper.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharedUtils\SimpleVars.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\CommonPasses\CopyToOutputPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="..\CommonPasses\SimpleGBufferPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\SVGFPass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
-    <ClInclude Include="Passes\ComparePass.h">
-      <Filter>Passes</Filter>
-    </ClInclude>
+    <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
+    <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h" />
+    <ClInclude Include="..\CommonPasses\SimpleGBufferPass.h" />
+    <ClInclude Include="..\SharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="..\SharedUtils\RasterLaunch.h" />
+    <ClInclude Include="..\SharedUtils\RayLaunch.h" />
+    <ClInclude Include="..\SharedUtils\RenderingPipeline.h" />
+    <ClInclude Include="..\SharedUtils\RenderPass.h" />
+    <ClInclude Include="..\SharedUtils\ResourceManager.h" />
+    <ClInclude Include="..\SharedUtils\SceneLoaderWrapper.h" />
+    <ClInclude Include="..\SharedUtils\SimpleVars.h" />
+    <ClInclude Include="Passes\AmbientOcclusionPass.h" />
+    <ClInclude Include="Passes\ComparePass.h" />
+    <ClInclude Include="Passes\DirectLightingPass.h" />
+    <ClInclude Include="Passes\FinalStagePass.h" />
+    <ClInclude Include="Passes\ReflectionPass.h" />
+    <ClInclude Include="Passes\ShadowPass.h" />
+    <ClInclude Include="Passes\SVGFPass.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\aoCommonUtils.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\aoTracing.rt.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\finalStage.ps.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\lambert.ps.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\shadowPass.rt.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\shadowsUtils.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\reflection.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\commonUtils.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Data\halton.hlsli">
-    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFCommon.slang">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\MathConstants.hlsli">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\SVGF\MathHelpers.slang">
-      <Filter>Shaders\SVGF</Filter>
-    </None>
-    <None Include="Data\compare.ps.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Passes">
-      <UniqueIdentifier>{31582168-d68f-4af4-ae71-9dbba6088782}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{9597cdb1-33d0-46cd-b037-190b70ec3666}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SharedUtils">
-      <UniqueIdentifier>{c4a13194-ab3d-44a9-8dbd-e9232cfca76a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CommonPasses">
-      <UniqueIdentifier>{8a822d0c-97ca-492f-b7b9-77121a99996c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\SVGF">
-      <UniqueIdentifier>{0c55c932-d563-4276-a33b-a89be7df5eb3}</UniqueIdentifier>
-    </Filter>
+    <None Include="Data\aoTracing.rt.hlsl" />
+    <None Include="Data\aoCommonUtils.hlsli" />
+    <None Include="Data\commonUtils.hlsli" />
+    <None Include="Data\halton.hlsli" />
+    <None Include="Data\shadowsUtils.hlsli" />
+    <None Include="Data\shadowPass.rt.hlsl" />
+    <None Include="Data\lambert.ps.hlsl" />
+    <None Include="Data\finalStage.ps.hlsl" />
+    <None Include="Data\SVGF\MathConstants.hlsli" />
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
+    <None Include="Data\reflection.hlsl" />
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl" />
+    <None Include="Data\SVGF\SVGFCommon.slang" />
+    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl" />
+    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl" />
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl" />
+    <None Include="Data\SVGF\MathHelpers.slang" />
+    <None Include="Data\compare.ps.hlsl" />
+    <None Include="Data\standardShadowRay.hlsli" />
   </ItemGroup>
 </Project>

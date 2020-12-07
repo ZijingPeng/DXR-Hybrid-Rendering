@@ -15,27 +15,42 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
-// Some shared Falcor stuff for talking between CPU and GPU code
-#include "HostDeviceSharedMacros.h"
-#include "HostDeviceData.h"      
 
+// This class is to shading for final stage
 
-Texture2D<float4>   gReflection; 
-Texture2D<float4>   gDirectLighting;
-Texture2D<float4>   gShadowAO;
+#pragma once
+#include "../SharedUtils/RenderPass.h"
+#include "../SharedUtils/FullscreenLaunch.h"
 
-float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
+class MergePass : public ::RenderPass, inherit_shared_from_this<::RenderPass, MergePass>
 {
-    uint2 pixelPos = (uint2)pos.xy;
-    float4 reflection = gReflection[pixelPos];
-	float4 directLighting = gDirectLighting[pixelPos];
-	float4 shadow = gShadowAO[pixelPos];
+public:
+    using SharedPtr = std::shared_ptr<MergePass>;
 
-	float3 shadeColor;
+	static SharedPtr create(const std::vector<std::string> &buffersToMerge , const std::string &bufferToAccumulate = ResourceManager::kOutputChannel);
+	virtual ~MergePass() = default;
 
-	// Todo: reflection
-	shadeColor = (directLighting * shadow).rgb + reflection.rgb;
-	//shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
-	//shadeColor = reflection.rgb;
-	return float4(shadeColor, 1.0f);
-}
+protected:
+	MergePass(const std::vector<std::string> &buffersToMerge , const std::string &bufferToAccumulate);
+
+    // Implementation of SimpleRenderPass interface
+	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+  void execute(RenderContext* pRenderContext) override;
+  void renderGui(Gui* pGui) override;
+	void resize(uint32_t width, uint32_t height) override;
+
+	// The RenderPass class defines various methods we can override to specify this pass' properties. 
+	bool appliesPostprocess() override { return true; }
+
+	std::string                   mOutputTexName;
+  std::vector<std::string>      mBuffersToMerge;
+
+	// State for our shader
+	FullscreenLaunch::SharedPtr   mpShader;
+	GraphicsState::SharedPtr      mpGfxState;
+	Fbo::SharedPtr                mpInternalFbo;
+
+	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
+	Scene::SharedPtr              mpScene;
+};

@@ -78,7 +78,7 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	auto rayGenVars = mpRays->getRayGenVars();
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
 	rayGenVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
-	rayGenVars["RageGenCB"]["gReverseRoughness"] = mReverseRoughness;
+	rayGenVars["RayGenCB"]["gReverseRoughness"] = mReverseRoughness;
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	rayGenVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
@@ -96,7 +96,9 @@ void ReflectionPass::renderGui(Gui* pGui)
 	int dirty = 0;
 
 
-	dirty |= (int)pGui->addCheckBox("Reverse Roughness", mReverseRoughness);
+	//dirty |= (int)pGui->addCheckBox("Reverse Roughness", mReverseRoughness);
+	dirty |= (int)pGui->addCheckBox(mReverseRoughness ? "Inverse roughness" : "Not inverse roughness",
+		mReverseRoughness);
 
 	// If any of our UI parameters changed, let the pipeline know we're doing something different next frame
 	if (dirty) setRefreshFlag();

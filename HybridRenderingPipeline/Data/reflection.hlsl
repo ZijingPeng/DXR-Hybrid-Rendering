@@ -132,7 +132,7 @@ void ReflectRayGen()
 	float3 N = worldNorm.xyz;
 	if (gReverseRoughness)
 	{
-		roughness = 1 - roughness;
+		roughness = 1.0 - roughness;
 		specular = float4(roughness, roughness, roughness, roughness);
 	}
 
@@ -181,6 +181,7 @@ void ReflectRayGen()
 		float  D = ggxNormalDistribution(NdotH, roughness);          // The GGX normal distribution
 		float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);   // Use Schlick's masking term approx
 		float3 F = schlickFresnel(specular.xyz, LdotH);                  // Use Schlick's approx to Fresnel
+		F = float3(1.0);
 		float3 ggxTerm = D * G * F / (4 * NdotL * NdotV);        // The Cook-Torrance microfacet BRDF
 
 		// What's the probability of sampling vector H from getGGXMicrofacet()?
@@ -188,7 +189,9 @@ void ReflectRayGen()
 
 		float probDiffuse = probabilityToSampleDiffuse(diffuse.xyz, specular.xyz);
 		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
-		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
+		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - roughness));
+		
+		shadeColor = bounceColor;
 	}
 
 	bool colorsNan = any(isnan(shadeColor));

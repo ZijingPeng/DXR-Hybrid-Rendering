@@ -22,6 +22,7 @@ protected:
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui* pGui) override;
 
     // The RenderPass class defines various methods we can override to specify this pass' properties. 
     bool requiresScene() override { return true; }
@@ -35,4 +36,5 @@ protected:
     // Various internal parameters
     uint32_t                                mMinTSelector = 1;      ///< Allow user to select which minT value to use for rays
     uint32_t                                mFrameCount = 0;
+    bool                                    mReverseRoughness = false;
 };

@@ -40,7 +40,7 @@ cbuffer RayGenCB
 {
 	uint  gFrameCount;
 	float gMinT;
-	
+	bool gReverseRoughness;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -130,10 +130,10 @@ void ReflectRayGen()
 
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 	float3 N = worldNorm.xyz;
-
+	roughness = gReverseRoughness ? 1 - roughness : roughness;
 	// Make sure our normal is pointed the right direction
-	if (dot(worldNorm.xyz, V) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;
-	float NdotV = dot(worldNorm.xyz, V);
+	if (dot(N, V) <= 0.0f) N = -N;
+	float NdotV = dot(N, V);
 
 
 
@@ -190,5 +190,4 @@ void ReflectRayGen()
 	// Store out the color of this shaded pixel
 	gOutput[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
 
-	
 }

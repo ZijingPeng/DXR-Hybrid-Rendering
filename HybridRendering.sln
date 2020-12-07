@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HybridRenderingPipeline", "HybridRenderingPipeline\HybridRendering.vcxproj", "{73E5866E-B56E-47A9-BB31-9D116843BC8C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PathTracing", "PathTracingPipeline\PathTracing.vcxproj", "{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -65,6 +67,20 @@ Global
 		{73E5866E-B56E-47A9-BB31-9D116843BC8C}.ReleaseD3D12|x64.Build.0 = Release|x64
 		{73E5866E-B56E-47A9-BB31-9D116843BC8C}.ReleaseD3D12|x86.ActiveCfg = Release|x64
 		{73E5866E-B56E-47A9-BB31-9D116843BC8C}.ReleaseD3D12|x86.Build.0 = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Debug|x64.ActiveCfg = Debug|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Debug|x64.Build.0 = Debug|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Debug|x86.ActiveCfg = Debug|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.DebugD3D12|x64.ActiveCfg = Debug|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.DebugD3D12|x64.Build.0 = Debug|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.DebugD3D12|x86.ActiveCfg = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.DebugD3D12|x86.Build.0 = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Release|x64.ActiveCfg = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Release|x64.Build.0 = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.Release|x86.ActiveCfg = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.ReleaseD3D12|x64.ActiveCfg = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.ReleaseD3D12|x64.Build.0 = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.ReleaseD3D12|x86.ActiveCfg = Release|x64
+		{CA04966C-BFDE-4BE9-A66F-1DCC7CE60429}.ReleaseD3D12|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

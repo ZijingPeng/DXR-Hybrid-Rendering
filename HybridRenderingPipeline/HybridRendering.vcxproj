@@ -26,6 +26,7 @@
     <ClCompile Include="Passes\ComparePass.cpp" />
     <ClCompile Include="Passes\DirectLightingPass.cpp" />
     <ClCompile Include="Passes\FinalStagePass.cpp" />
+    <ClCompile Include="Passes\MergePass.cpp" />
     <ClCompile Include="Passes\ReflectionPass.cpp" />
     <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="Passes\ComparePass.h" />
     <ClInclude Include="Passes\DirectLightingPass.h" />
     <ClInclude Include="Passes\FinalStagePass.h" />
+    <ClInclude Include="Passes\MergePass.h" />
     <ClInclude Include="Passes\ReflectionPass.h" />
     <ClInclude Include="Passes\ShadowPass.h" />
     <ClInclude Include="Passes\SVGFPass.h" />
@@ -147,6 +149,11 @@
       <FileType>Document</FileType>
     </None>
     <None Include="Data\SVGFShadow\SVGFReproject.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\merge.ps.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

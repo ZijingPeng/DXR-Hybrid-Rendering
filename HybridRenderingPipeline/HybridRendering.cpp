@@ -30,35 +30,43 @@
 #include "../CommonPasses/SimpleGBufferPass.h"
 #include "../CommonPasses/SimpleAccumulationPass.h"
 #include "../CommonPasses/CopyToOutputPass.h"
+#include "../CommonPasses/LightProbeGBufferPass.h"
+#include "../CommonPasses/SimpleToneMappingPass.h"
+#include "../PathTracingPipeline/Passes/GlobalIllumination.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	// Create our rendering pipeline
 	RenderingPipeline *pipeline = new RenderingPipeline();
 
-	/*pipeline->setPass(0, SimpleGBufferPass::create());
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-    pipeline->setPass(4, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
-	pipeline->setPass(5, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(6, SVGFPass::create("reflectionFilter", "reflectionChannel"));
-	pipeline->setPass(7, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
-	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
-	pipeline->setPass(9, ComparePass::create("compareOutput"));
-	pipeline->setPass(10, CopyToOutputPass::create());*/
+	int idx = 0;
+	bool useAccum = true;
+	bool useRaytracing = false;
 
-	pipeline->setPass(0, SimpleGBufferPass::create());
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, ReflectionPass::create("reflectionFilter"));
-	pipeline->setPass(3, SimpleAccumulationPass::create("reflectionFilter"));
-	pipeline->setPass(4, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(5, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
-	pipeline->setPass(6, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(7, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
-	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
-	pipeline->setPass(9, ComparePass::create("compareOutput"));
-	pipeline->setPass(10, CopyToOutputPass::create());
+	pipeline->setPass(idx++, SimpleGBufferPass::create());
+	pipeline->setPass(idx++, AmbientOcclusionPass::create("aoChannel"));
+	if (useAccum) {
+		pipeline->setPass(idx++, ReflectionPass::create("reflectionFilter"));
+		pipeline->setPass(idx++, SimpleAccumulationPass::create("reflectionFilter"));
+	}
+	else {
+		pipeline->setPass(idx++, ReflectionPass::create("reflectionOut"));
+		pipeline->setPass(idx++, SVGFPass::create("reflectionFilter", "reflectionOut"));
+	}
+	pipeline->setPass(idx++, ShadowPass::create("shadowChannel"));
+	pipeline->setPass(idx++, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
+	pipeline->setPass(idx++, DirectLightingPass::create("directLightingChannel"));
+	pipeline->setPass(idx++, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
+	pipeline->setPass(idx++, FinalStagePass::create("finalOutput"));
+	// Ray tracing
+	if (useRaytracing) {
+		pipeline->setPass(idx++, LightProbeGBufferPass::create());
+		pipeline->setPass(idx++, GlobalIlluminationPass::create("HDRColorOutput"));  // Output our result to "HDRColorOutput"
+		pipeline->setPass(idx++, SimpleAccumulationPass::create("HDRColorOutput"));     // Accumulate on "HDRColorOutput"
+		pipeline->setPass(idx++, SimpleToneMappingPass::create("HDRColorOutput", "raytraceOutput"));  // Tonemap "HDRColorOutput" to the output channel
+	}
+	pipeline->setPass(idx++, ComparePass::create("compareOutput"));
+	pipeline->setPass(idx++, CopyToOutputPass::create());
 	
 
 	// Define a set of config / window parameters for our program

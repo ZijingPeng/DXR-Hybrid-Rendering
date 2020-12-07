@@ -110,18 +110,20 @@ float3 ggxDirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, f
 	//return float3(0.0);
 }
 
-float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth)
+float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth, bool inverseRoughness)
 {
+	if (!inverseRoughness) {
+		rough = 1.0 - rough;
+	}
 	// We have to decide whether we sample our diffuse or specular/ggx lobe.
 	float probDiffuse = probabilityToSampleDiffuse(dif, spec);
-	int chooseDiffuse = (frac(haltonNext(hState) + nextRand(rndSeed)) < probDiffuse);
 	//int chooseDiffuse = 0;
 
 	// We'll need NdotV for both diffuse and specular...
 	float NdotV = saturate(dot(N, V));
 
 	// If we randomly selected to sample our diffuse lobe...
-	if (chooseDiffuse)
+	if (frac(haltonNext(hState) + nextRand(rndSeed)) > rough)
 	{
 		return lambertianIndirect(rndSeed, hState, hit, N, dif, rayDepth);
 		//return float3(0.0);
@@ -132,11 +134,12 @@ float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N,
 		float rnd1 = frac(haltonNext(hState) + nextRand(rndSeed));
 		float rnd2 = frac(haltonNext(hState) + nextRand(rndSeed));
 		float2 Xi = float2(rnd1, rnd2);
-		float3 H = ImportanceSampleGGX(Xi, N, rough);
+		float3 H = ImportanceSampleGGX(Xi, N, 1.0 - rough);
 		float3 L = normalize(2.0 * dot(V, H) * H - V);
 
 		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth);
-		return bounceColor * spec;
+		return bounceColor;
+		//return float3(0.0, 1.0, 0.0);
 	}
 }
 
@@ -163,6 +166,6 @@ void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleInterse
 		//     leaks at secondary surfaces with normal maps due to indirect rays going below the surface.  This
 		//     isn't a huge issue, but this is a (TODO: fix)
 		rayData.color += ggxIndirect(rayData.rndSeed, rayData.hState, shadeData.posW, shadeData.N, shadeData.N, shadeData.V,
-			shadeData.diffuse, shadeData.specular, shadeData.roughness, rayData.rayDepth);
+			shadeData.diffuse, shadeData.specular, shadeData.roughness, rayData.rayDepth, gInverseRoughness);
 	}
 }

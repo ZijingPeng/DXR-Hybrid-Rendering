@@ -79,6 +79,9 @@ void GlobalIlluminationPass::renderGui(Gui* pGui)
 		                            mDoDirectGI);
 	dirty |= (int)pGui->addCheckBox(mDoIndirectGI ? "Shooting global illumination rays" : "Skipping global illumination", 
 		                            mDoIndirectGI);
+	dirty |= (int)pGui->addCheckBox(mInverseRoughness ? "Inverse roughness" : "Not inverse roughness",
+		mInverseRoughness);
+
 	if (dirty) setRefreshFlag();
 }
 
@@ -99,6 +102,7 @@ void GlobalIlluminationPass::execute(RenderContext* pRenderContext)
 	globalVars["GlobalCB"]["gDoDirectGI"]   = mDoDirectGI;
 	globalVars["GlobalCB"]["gMaxDepth"]     = mUserSpecifiedRayDepth;
     globalVars["GlobalCB"]["gEmitMult"]     = 1.0f;
+	globalVars["GlobalCB"]["gInverseRoughness"] = mInverseRoughness;
 	globalVars["gPos"]         = mpResManager->getTexture("WorldPosition");
 	globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
 	globalVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");

@@ -35,6 +35,7 @@ shared cbuffer GlobalCB
 	bool  gDoDirectGI;     // A boolean determining if we should compute direct lighting
 	uint  gMaxDepth;       // Maximum number of recursive bounces to allow
     float gEmitMult;       // Multiply emissive amount by this factor (set to 1, usually)
+	bool  gInverseRoughness;
 }
 
 // Input and out textures that need to be set by the C++ code (for the ray gen shader)
@@ -87,7 +88,7 @@ void SimpleDiffuseGIRayGen()
 	bool isGeometryValid = (worldPos.w != 0.0f);
 
 	// Extract and compute some material and geometric parameters
-	float roughness = specMatlColor.a * specMatlColor.a;
+	float roughness = specMatlColor.a;
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 
 	// Make sure our normal is pointed the right direction
@@ -128,7 +129,7 @@ void SimpleDiffuseGIRayGen()
 		// (Optionally) do indirect lighting for global illumination
 		if (gDoIndirectGI && (gMaxDepth > 0))
 			shadeColor += ggxIndirect(randSeed, hState, worldPos.xyz, worldNorm.xyz, noMapN,
-				                      V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0);
+				                      V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, gInverseRoughness);
 	}
 	
 	// Since we didn't do a good job above catching NaN's, div by 0, infs, etc.,
@@ -138,4 +139,5 @@ void SimpleDiffuseGIRayGen()
 
 	// Store out the color of this shaded pixel
 	gOutput[launchIndex] = float4(colorsNan?float3(0,0,0):shadeColor, 1.0f);
+	//gOutput[launchIndex] = float4(specMatlColor.a, specMatlColor.a, specMatlColor.a, 1.0f);
 }

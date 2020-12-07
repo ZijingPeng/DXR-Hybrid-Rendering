@@ -72,7 +72,7 @@ void ReflectAnyHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionA
 void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	ShadingData shadeData = getShadingData(PrimitiveIndex(), attribs);
-
+	rayData.reflectColor = float4(shadeData.emissive.rgb, 1);
 	// Direct Shade
 	float3 hit = shadeData.posW;
 	float3 N = shadeData.N;
@@ -106,7 +106,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float3 ggxTerm = D * G * F / (4 * NdotV /* * NdotL */);
 
 	// Compute our final color (combining diffuse lobe plus specular GGX lobe)
-	rayData.reflectColor = float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
+	rayData.reflectColor += float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
 }
 
 
@@ -115,7 +115,7 @@ void ReflectRayGen()
 {
 	// Where is this ray on screen?
 	uint2 launchIndex = DispatchRaysIndex().xy;
-	uint2 launchDim   = DispatchRaysDimensions().xy;
+	uint2 launchDim = DispatchRaysDimensions().xy;
 
 	// Initialize random seed per sample based on a screen position and temporally varying count
 	uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
@@ -130,7 +130,12 @@ void ReflectRayGen()
 
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 	float3 N = worldNorm.xyz;
-	roughness = gReverseRoughness ? 1 - roughness : roughness;
+	if (gReverseRoughness)
+	{
+		roughness = 1 - roughness;
+		specular = float4(roughness, roughness, roughness, roughness);
+	}
+
 	// Make sure our normal is pointed the right direction
 	if (dot(N, V) <= 0.0f) N = -N;
 	float NdotV = dot(N, V);
@@ -159,7 +164,7 @@ void ReflectRayGen()
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-		
+
 		// Grab our geometric normal.
 		float3 geoN = normalize(extraData.yzw);
 		if (dot(geoN, V) <= 0.0f) geoN = -geoN;

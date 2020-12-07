@@ -53,15 +53,6 @@ protected:
   Fbo::SharedPtr mpFilteredIlluminationFbo;
   Fbo::SharedPtr mpFinalFbo;
 
-  // Texture pointers
-  Texture::SharedPtr pAlbedoTexture;
-	Texture::SharedPtr pEmissionTexture;
-	Texture::SharedPtr pWorldPositionTexture;
-	Texture::SharedPtr pWorldNormalTexture;
-	Texture::SharedPtr pPosNormalFwidthTexture;
-	Texture::SharedPtr pLinearZTexture;
-	Texture::SharedPtr pMotionVectorTexture;
-
 	bool    mBuffersNeedClear    = false;
   bool    mFilterEnabled       = true;
   int32_t mFilterIterations    = 4;

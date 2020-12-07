@@ -40,13 +40,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
 	pipeline->setPass(2, ReflectionPass::create("reflectionChannel"));
 	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-  pipeline->setPass(4, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
+    pipeline->setPass(4, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
 	pipeline->setPass(5, DirectLightingPass::create("directLightingChannel"));
 	pipeline->setPass(6, SVGFPass::create("reflectionFilter", "reflectionChannel"));
-	//pipeline->setPass(7, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
-	//pipeline->setPass(8, FinalStagePass::create("finalOutput"));
-	//pipeline->setPass(9, ComparePass::create("compareOutput"));
-	pipeline->setPass(7, CopyToOutputPass::create());
+	pipeline->setPass(7, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
+	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
+	pipeline->setPass(9, ComparePass::create("compareOutput"));
+	pipeline->setPass(10, CopyToOutputPass::create());
 	
 
 	// Define a set of config / window parameters for our program

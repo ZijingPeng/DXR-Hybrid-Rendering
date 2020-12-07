@@ -61,15 +61,14 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
 	
-
-  // All of these are existing textures, just grab them
-  pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
-	pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
-  pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
-	pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
-	pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
-	pLinearZTexture = mpResManager->getTexture(kInputBufferLinearZ);
-	pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
+	 mpResManager->requestTextureResources({
+		kInputBufferEmission,
+		kInputBufferWorldPosition,
+		kInputBufferWorldNormal,
+		kInputBufferPosNormalFwidth,
+		kInputBufferLinearZ,
+		kInputBufferMotionVector
+	});
 
 	mpResManager->requestTextureResources({
 		kInternalBufferPreviousLinearZAndNormal,
@@ -186,6 +185,13 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 {
 	// Grab the texture to write to
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
+  Texture::SharedPtr pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
+	Texture::SharedPtr pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
+	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
+	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
+	Texture::SharedPtr pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
+	Texture::SharedPtr pLinearZTexture = mpResManager->getTexture(kInputBufferLinearZ);
+	Texture::SharedPtr pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
 	Texture::SharedPtr pOutputTexture = mpResManager->getTexture(mOutputTexName);
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.

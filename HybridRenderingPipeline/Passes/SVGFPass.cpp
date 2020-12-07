@@ -52,7 +52,7 @@ SVGFPass::SharedPtr SVGFPass::create(const std::string& bufferOut, const std::st
 SVGFPass::SVGFPass(const std::string& bufferOut, const std::string &inputColorBuffer)
 	: ::RenderPass("SVGF Pass", "SVGF Options")
 {
-	  mOutputTexName = bufferOut;
+	mOutputTexName = bufferOut;
     mInputTexName = inputColorBuffer;
 }
 
@@ -60,23 +60,21 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
-	
-
-  // All of these are existing textures, just grab them
-  pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
-	pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
-  pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
-	pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
-	pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
-	pLinearZTexture = mpResManager->getTexture(kInputBufferLinearZ);
-	pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
+	mpResManager->requestTextureResources({
+		kInputBufferAlbedo,
+		kInputBufferEmission,
+		kInputBufferWorldPosition,
+		kInputBufferWorldNormal,
+		kInputBufferPosNormalFwidth,
+		kInputBufferLinearZ,
+		kInputBufferMotionVector
+	});
 
 	mpResManager->requestTextureResources({
 		kInternalBufferPreviousLinearZAndNormal,
 		kInternalBufferPreviousLighting,
 		kInternalBufferPreviousMoments
 	});
-  mpResManager->requestTextureResource(mInputTexName);
 	mpResManager->requestTextureResource(mOutputTexName);
 
 	// Set the default scene to load
@@ -103,7 +101,7 @@ void SVGFPass::allocateFbos(glm::uvec2 dim)
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
     desc.setColorTarget(1, Falcor::ResourceFormat::RG32Float);   // moments
     desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
-	  mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
+	mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpPrevReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
@@ -139,7 +137,7 @@ void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 
 void SVGFPass::resize(uint32_t width, uint32_t height)
 {
-	  glm::uvec2 dim(width, height);
+	glm::uvec2 dim(width, height);
     allocateFbos(dim);
 }
 
@@ -187,6 +185,15 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 {
 	// Grab the texture to write to
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
+
+	Texture::SharedPtr pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
+	Texture::SharedPtr pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
+	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
+	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
+	Texture::SharedPtr pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
+	Texture::SharedPtr pLinearZTexture = mpResManager->getTexture(kInputBufferLinearZ);
+	Texture::SharedPtr pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
+
 	Texture::SharedPtr pOutputTexture = mpResManager->getTexture(mOutputTexName);
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
@@ -286,9 +293,9 @@ void SVGFPass::computeFilteredMoments(RenderContext* pRenderContext)
   auto shaderVars = mpFilterMoments->getVars();
 
   shaderVars["gIllumination"]     = mpCurReprojFbo->getColorTexture(0);
-  shaderVars["gMoments"]          = mpCurReprojFbo->getColorTexture(1);
   shaderVars["gHistoryLength"]    = mpCurReprojFbo->getColorTexture(2);
   shaderVars["gLinearZAndNormal"]          = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gMoments"]          = mpCurReprojFbo->getColorTexture(1);
 
   shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
   shaderVars["PerImageCB"]["gPhiNormal"]  = mPhiNormal;
@@ -310,8 +317,8 @@ void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture
   for (int i = 0; i < mFilterIterations; i++)
   {
     Fbo::SharedPtr curTargetFbo = mpPingPongFbo[1];
-    shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-    shaderVars["PerImageCB"]["gStepSize"] = 1 << i;
+	shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+	shaderVars["PerImageCB"]["gStepSize"] = 1 << i;
     mpGfxState->setFbo(curTargetFbo);
     mpAtrous->execute(pRenderContext, mpGfxState);
 

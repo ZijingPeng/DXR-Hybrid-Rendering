@@ -72,7 +72,7 @@ void ReflectAnyHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionA
 void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	ShadingData shadeData = getShadingData(PrimitiveIndex(), attribs);
-
+	rayData.reflectColor = float4(shadeData.emissive.rgb, 1);
 	// Direct Shade
 	float3 hit = shadeData.posW;
 	float3 N = shadeData.N;
@@ -106,7 +106,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float3 ggxTerm = D * G * F / (4 * NdotV /* * NdotL */);
 
 	// Compute our final color (combining diffuse lobe plus specular GGX lobe)
-	rayData.reflectColor = float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
+	rayData.reflectColor += float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
 }
 
 
@@ -130,7 +130,12 @@ void ReflectRayGen()
 
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 	float3 N = worldNorm.xyz;
-	roughness = gReverseRoughness ? 1 - roughness : roughness;
+	if (gReverseRoughness)
+	{
+		roughness = 1 - roughness;
+		specular = float4(roughness, roughness, roughness, roughness);
+	}
+
 	// Make sure our normal is pointed the right direction
 	if (dot(N, V) <= 0.0f) N = -N;
 	float NdotV = dot(N, V);

@@ -25,6 +25,7 @@ namespace {
     const char *kShadowAOChannel = "shadowFilter";
     const char *kDirectLightChannel = "directLightingChannel";
     const char *kReflectionChannel = "reflectionFilter";
+	const char* kEmissiveChannel = "MaterialEmissive";
 };
 
 // Define our constructor methods
@@ -95,6 +96,7 @@ void FinalStagePass::execute(RenderContext* pRenderContext)
 	shaderVars["gReflection"] = mpResManager->getTexture(kReflectionChannel);
 	shaderVars["gDirectLighting"] = mpResManager->getTexture(kDirectLightChannel);
 	shaderVars["gShadowAO"] = mpResManager->getTexture(kShadowAOChannel);
+	shaderVars["gEmissive"] = mpResManager->getTexture(kEmissiveChannel);
 
   // Execute the accumulation shader
   mpShader->execute(pRenderContext, mpGfxState);

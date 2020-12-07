@@ -189,6 +189,7 @@ void ReflectRayGen()
 		float probDiffuse = probabilityToSampleDiffuse(diffuse.xyz, specular.xyz);
 		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
 		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
+		shadeColor = bounceColor * (1.0 - roughness);
 	}
 
 	bool colorsNan = any(isnan(shadeColor));

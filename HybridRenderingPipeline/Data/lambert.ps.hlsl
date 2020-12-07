@@ -56,6 +56,7 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
     float4 difMatlColor = gDiffuseMatl[pixelPos];
 
 	float3 shadeColor;
+	float ambient = 0.03;
 
 	// Our camera sees the background if worldPos.w is 0, only do diffuse shading
 	if (worldPos.w != 0.0f)
@@ -80,10 +81,13 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 			// Accumulate our Lambertian shading color
 			shadeColor += LdotN * lightIntensity;
 		}
-
 		// Modulate based on the physically based Lambertian term (albedo/pi)
 		shadeColor *= difMatlColor.rgb / 3.141592f;
 	}
+
+	//shadeColor = max(shadeColor, ambient * difMatlColor.rgb);
+	shadeColor = max(ambient * difMatlColor.rgb, shadeColor);
+	shadeColor = min(shadeColor, float3(1.0, 1.0, 1.0));
 
 	//return float4(1.0, 0.0, 0.0, 1.0f);
 	return float4(shadeColor, 1.0f);

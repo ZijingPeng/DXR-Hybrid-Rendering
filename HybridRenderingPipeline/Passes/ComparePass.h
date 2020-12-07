@@ -27,31 +27,28 @@ public:
 	using SharedPtr = std::shared_ptr<ComparePass>;
 	using SharedConstPtr = std::shared_ptr<const ComparePass>;
 
-	static SharedPtr create() { return SharedPtr(new ComparePass()); }
+	static SharedPtr create(const std::string &output) { return SharedPtr(new ComparePass(output)); }
 	virtual ~ComparePass() = default;
 
 protected:
-	ComparePass();
+	ComparePass(const std::string &output);
 
 	// Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 	void execute(RenderContext* pRenderContext) override;
 	void renderGui(Gui* pGui) override;
 	void resize(uint32_t width, uint32_t height) override;
-  void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
-
-	// Override some functions that provide information to the RenderPipeline class
+    void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
+	void updateDropdown(ResourceManager::SharedPtr pResManager);
 	bool appliesPostprocess() override { return true; }
-	bool hasAnimation() override { return false; }
 
 	// Information about the rendering texture we're accumulating into
-  Gui::DropdownList mLeftBuffers;
-  Gui::DropdownList mRightBuffers;  
-  uint32_t          mSelectLeft = 0xFFFFFFFFu;
-  uint32_t          mSelectRight = 0xFFFFFFFFu;
+	std::string       mOutputChannel;
+	Gui::DropdownList mLeftBuffers;
+	Gui::DropdownList mRightBuffers;  
+	uint32_t          mSelectLeft = 0xFFFFFFFFu;
+	uint32_t          mSelectRight = 0xFFFFFFFFu;
   
-
-
 	// State for our accumulation shader
 	FullscreenLaunch::SharedPtr   mpCompareShader;
 	GraphicsState::SharedPtr      mpGfxState;

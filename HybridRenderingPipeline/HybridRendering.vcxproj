@@ -30,6 +30,7 @@
     <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
     <ClCompile Include="Passes\SVGFPass.cpp" />
+    <ClCompile Include="Passes\SVGFShadowPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="Passes\ReflectionPass.h" />
     <ClInclude Include="Passes\ShadowPass.h" />
     <ClInclude Include="Passes\SVGFPass.h" />
+    <ClInclude Include="Passes\SVGFShadowPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Framework\FalcorSharedObjects\FalcorSharedObjects.vcxproj">
@@ -69,6 +71,9 @@
     <None Include="Data\lambert.ps.hlsl" />
     <None Include="Data\finalStage.ps.hlsl" />
     <None Include="Data\standardShadowRay.hlsli" />
+    <None Include="Data\SVGFShadow\MathConstants.hlsli" />
+    <None Include="Data\SVGFShadow\MathHelpers.slang" />
+    <None Include="Data\SVGFShadow\SVGFCommon.slang" />
     <None Include="Data\SVGF\MathConstants.hlsli" />
     <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
   </ItemGroup>
@@ -125,6 +130,23 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\SVGFShadow\SVGFAtrous.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFFilterMoments.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFFinalModulate.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFPackLinearZAndNormal.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFReproject.ps.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

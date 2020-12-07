@@ -45,15 +45,7 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 
 	// Create our wrapper for a scene-rasterization pass.
 	mpRaster = RasterLaunch::createFromFiles(kGbufVertShader, kGbufFragShader);
-	mpRaster->setScene(mpScene);
-
-  mpInternalFbo = mpResManager->createManagedFbo(
-		{
-			"WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough",
-			"MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors" 
-		}, // Names of color buffers
-		"Z-Buffer"
-	);                        
+	mpRaster->setScene(mpScene);                   
 
   return true;
 }
@@ -72,6 +64,14 @@ void SimpleGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPt
 void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 {
   // Failed to create a valid FBO?  We're done.
+
+	mpInternalFbo = mpResManager->createManagedFbo(
+		{
+			"WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough",
+			"MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors"
+		}, // Names of color buffers
+		"Z-Buffer"
+	);
   if (!mpInternalFbo) return;
 	// Clear our g-buffer.  All color buffers to (0,0,0,0), depth to 1, stencil to 0
 	pRenderContext->clearFbo(mpInternalFbo.get(), vec4(0, 0, 0, 0), 1.0f, 0);

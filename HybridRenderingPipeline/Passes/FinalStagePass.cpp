@@ -39,7 +39,7 @@ bool FinalStagePass::initialize(RenderContext* pRenderContext, ResourceManager::
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "aoChannel", "reflectionChannel", "directLightingChannel", "shadowChannel" });
+	mpResManager->requestTextureResources({ "aoChannel", "shadowFilter", "directLightingChannel", "reflectionFilter" });
 	mpResManager->requestTextureResource(mOutputTexName);
 
 	// Set the default scene to load
@@ -89,9 +89,9 @@ void FinalStagePass::execute(RenderContext* pRenderContext)
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	auto shaderVars = mpShader->getVars();
 	shaderVars["gAO"] = mpResManager->getTexture("aoChannel");
-	shaderVars["gReflection"] = mpResManager->getTexture("reflectionChannel");
+	shaderVars["gReflection"] = mpResManager->getTexture("reflectionFilter");
 	shaderVars["gDirectLighting"] = mpResManager->getTexture("directLightingChannel");
-	shaderVars["gShadow"] = mpResManager->getTexture("shadowChannel");
+	shaderVars["gShadow"] = mpResManager->getTexture("shadowFilter");
 
     // Execute the accumulation shader
     mpShader->execute(pRenderContext, mpGfxState);

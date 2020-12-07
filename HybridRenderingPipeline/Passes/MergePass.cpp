@@ -69,7 +69,7 @@ void MergePass::renderGui(Gui* pGui)
 void MergePass::execute(RenderContext* pRenderContext)
 {
     // Grab the texture to write to
-	Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputTexName);
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTexName, vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
   if (!pDstTex) return;
@@ -77,7 +77,7 @@ void MergePass::execute(RenderContext* pRenderContext)
   // Pass our G-buffer textures down to the HLSL so we can shade
   auto shaderVars = mpShader->getVars();
   shaderVars["gM1"] = mpResManager->getTexture(mBuffersToMerge[0]);
-  shaderVars["gM2"] = mpResManager->getTexture(mBuffersToMerge[1]));
+  shaderVars["gM2"] = mpResManager->getTexture(mBuffersToMerge[1]);
 
   // Execute the accumulation shader
   mpShader->execute(pRenderContext, mpGfxState);

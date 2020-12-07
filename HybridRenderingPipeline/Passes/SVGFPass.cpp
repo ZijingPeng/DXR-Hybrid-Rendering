@@ -76,6 +76,7 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 		kInternalBufferPreviousLighting,
 		kInternalBufferPreviousMoments
 	});
+  mpResManager->requestTextureResource(mInputTexName);
 	mpResManager->requestTextureResource(mOutputTexName);
 
 	// Set the default scene to load

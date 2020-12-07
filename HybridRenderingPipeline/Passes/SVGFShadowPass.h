@@ -4,16 +4,16 @@
 #include "../SharedUtils/RenderPass.h"
 #include "../SharedUtils/FullscreenLaunch.h"
 
-class SVGFPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, SVGFPass>
+class SVGFShadowPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, SVGFShadowPass>
 {
 public:
-	using SharedPtr = std::shared_ptr<SVGFPass>;
+	using SharedPtr = std::shared_ptr<SVGFShadowPass>;
 
 	static SharedPtr create(const std::string& bufferToAccumulate, const std::string& inputColorBuffer);
-	virtual ~SVGFPass() = default;
+	virtual ~SVGFShadowPass() = default;
 
 protected:
-	SVGFPass(const std::string& bufferToAccumulate, const std::string& inputColorBuffer);
+	SVGFShadowPass(const std::string& bufferToAccumulate, const std::string& inputColorBuffer);
 
 	// Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;

@@ -16,17 +16,17 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "./SVGFPass.h"
+#include "./SVGFShadowPass.h"
 
 // TODO: on compile, allocate FBOs based on size
 
 namespace {
 	// Where is our shader located?
-	const char kPackLinearZAndNormalShader[] = "SVGF\\SVGFPackLinearZAndNormal.ps.hlsl";
-	const char kReprojectShader[] = "SVGF\\SVGFReproject.ps.hlsl";
-	const char kAtrousShader[] = "SVGF\\SVGFAtrous.ps.hlsl";
-	const char kFilterMomentShader[] = "SVGF\\SVGFFilterMoments.ps.hlsl";
-	const char kFinalModulateShader[] = "SVGF\\SVGFFinalModulate.ps.hlsl";
+	const char kPackLinearZAndNormalShader[] = "SVGFShadow\\SVGFPackLinearZAndNormal.ps.hlsl";
+	const char kReprojectShader[] = "SVGFShadow\\SVGFReproject.ps.hlsl";
+	const char kAtrousShader[] = "SVGFShadow\\SVGFAtrous.ps.hlsl";
+	const char kFilterMomentShader[] = "SVGFShadow\\SVGFFilterMoments.ps.hlsl";
+	const char kFinalModulateShader[] = "SVGFShadow\\SVGFFinalModulate.ps.hlsl";
 
 	// Input buffers
 	const char kInputBufferAlbedo[] = "MaterialDiffuse";
@@ -44,19 +44,19 @@ namespace {
 };
 
 // Define our constructor methods
-SVGFPass::SharedPtr SVGFPass::create(const std::string& bufferOut, const std::string &inputColorBuffer)
+SVGFShadowPass::SharedPtr SVGFShadowPass::create(const std::string& bufferOut, const std::string &inputColorBuffer)
 {
-	return SharedPtr(new SVGFPass(bufferOut, inputColorBuffer));
+	return SharedPtr(new SVGFShadowPass(bufferOut, inputColorBuffer));
 }
 
-SVGFPass::SVGFPass(const std::string& bufferOut, const std::string &inputColorBuffer)
-	: ::RenderPass("SVGF Pass", "SVGF Options")
+SVGFShadowPass::SVGFShadowPass(const std::string& bufferOut, const std::string &inputColorBuffer)
+	: ::RenderPass("SVGF Shadow Pass", "SVGF Shadow Options")
 {
 	  mOutputTexName = bufferOut;
     mInputTexName = inputColorBuffer;
 }
 
-bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
@@ -92,7 +92,7 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 	return true;
 }
 
-void SVGFPass::allocateFbos(glm::uvec2 dim)
+void SVGFShadowPass::allocateFbos(glm::uvec2 dim)
 {
   {
     // Screen-size FBOs with 3 MRTs: one that is RGBA32F, one that is
@@ -127,7 +127,7 @@ void SVGFPass::allocateFbos(glm::uvec2 dim)
   mBuffersNeedClear = true;
 }
 
-void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+void SVGFShadowPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
 
 	// // When our renderer moves around we want to reset accumulation, so stash the scene pointer
@@ -136,14 +136,14 @@ void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 	// mpLambertShader->setLights(mpScene->getLights());
 }
 
-void SVGFPass::resize(uint32_t width, uint32_t height)
+void SVGFShadowPass::resize(uint32_t width, uint32_t height)
 {
 	  glm::uvec2 dim(width, height);
     allocateFbos(dim);
 }
 
 
-void SVGFPass::clearBuffers(RenderContext* pRenderContext) {
+void SVGFShadowPass::clearBuffers(RenderContext* pRenderContext) {
   pRenderContext->clearFbo(mpPingPongFbo[0].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpPingPongFbo[1].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpLinearZAndNormalFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
@@ -157,7 +157,7 @@ void SVGFPass::clearBuffers(RenderContext* pRenderContext) {
 	mpResManager->clearTexture(mpResManager->getTexture(kInternalBufferPreviousMoments), glm::vec4(0.f));
 }
 
-void SVGFPass::renderGui(Gui* pGui)
+void SVGFShadowPass::renderGui(Gui* pGui)
 {
   int dirty = 0;
   dirty |= (int)pGui->addCheckBox(mFilterEnabled ? "SVGF enabled" : "SVGF disabled", mFilterEnabled);
@@ -182,7 +182,7 @@ void SVGFPass::renderGui(Gui* pGui)
   if (dirty) mBuffersNeedClear = true;
 }
 
-void SVGFPass::execute(RenderContext* pRenderContext)
+void SVGFShadowPass::execute(RenderContext* pRenderContext)
 {
 	// Grab the texture to write to
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
@@ -227,7 +227,7 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 
 	// Compute albedo * filtered illumination and add emission back in.
   auto shaderVars = mpFinalModulate->getVars();
-  shaderVars["gAlbedo"] = pAlbedoTexture;
+  // shaderVars["gAlbedo"] = pAlbedoTexture;
   shaderVars["gEmission"] = pEmissionTexture;
   shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
   mpGfxState->setFbo(mpFinalFbo);
@@ -242,7 +242,7 @@ void SVGFPass::execute(RenderContext* pRenderContext)
                         pPrevLinearZAndNormalTexture->getRTV());
 }
 
-void SVGFPass::computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
+void SVGFShadowPass::computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
                                        Texture::SharedPtr pWorldNormalTexture)
 {
   auto shaderVars = mpPackLinearZAndNormal->getVars();
@@ -252,7 +252,7 @@ void SVGFPass::computeLinearZAndNormal(RenderContext* pRenderContext, Texture::S
   mpPackLinearZAndNormal->execute(pRenderContext, mpGfxState);
 }
 
-void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
+void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
                                    Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
                                    Texture::SharedPtr pMotionVectorTexture,
                                    Texture::SharedPtr pPositionNormalFwidthTexture,
@@ -264,7 +264,7 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
   shaderVars["gMotion"]        = pMotionVectorTexture;
   shaderVars["gColor"]         = pColorTexture;
   shaderVars["gEmission"]      = pEmissionTexture;
-  shaderVars["gAlbedo"]        = pAlbedoTexture;
+  // shaderVars["gAlbedo"]        = pAlbedoTexture;
   shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
@@ -280,7 +280,7 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
   mpReprojection->execute(pRenderContext, mpGfxState);
 }
 
-void SVGFPass::computeFilteredMoments(RenderContext* pRenderContext)
+void SVGFShadowPass::computeFilteredMoments(RenderContext* pRenderContext)
 {
   auto shaderVars = mpFilterMoments->getVars();
 
@@ -297,10 +297,10 @@ void SVGFPass::computeFilteredMoments(RenderContext* pRenderContext)
 }
 
 
-void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture)
+void SVGFShadowPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture)
 {
   auto shaderVars = mpAtrous->getVars();
-  shaderVars["gAlbedo"]        = pAlbedoTexture;
+  // shaderVars["gAlbedo"]        = pAlbedoTexture;
   shaderVars["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
   shaderVars["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
   shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;

@@ -38,9 +38,9 @@ namespace {
 	const char kInputBufferMotionVector[] = "MotiveVectors";
 
 	// Internal buffer names
-	const char kInternalBufferPreviousLinearZAndNormal[] = "Previous Linear Z and Packed Normal";
-	const char kInternalBufferPreviousLighting[] = "Previous Lighting";
-	const char kInternalBufferPreviousMoments[] = "Previous Moments";
+	const char kInternalBufferPreviousLinearZAndNormal[] = "Shadow Previous Linear Z and Packed Normal";
+	const char kInternalBufferPreviousLighting[] = "Shadow Previous Lighting";
+	const char kInternalBufferPreviousMoments[] = "Shadow Previous Moments";
 };
 
 // Define our constructor methods

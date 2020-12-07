@@ -20,6 +20,8 @@
     <ClCompile Include="Passes\ShadowPass.cpp" />
     <ClCompile Include="HybridRendering.cpp" />
     <ClCompile Include="Passes\SVGFPass.cpp" />
+    <ClCompile Include="Passes\SVGFShadowPass.cpp" />
+    <ClCompile Include="Passes\MergePass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
@@ -40,26 +42,94 @@
     <ClInclude Include="Passes\ReflectionPass.h" />
     <ClInclude Include="Passes\ShadowPass.h" />
     <ClInclude Include="Passes\SVGFPass.h" />
+    <ClInclude Include="Passes\SVGFShadowPass.h" />
+    <ClInclude Include="Passes\MergePass.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\aoTracing.rt.hlsl" />
-    <None Include="Data\aoCommonUtils.hlsli" />
-    <None Include="Data\commonUtils.hlsli" />
-    <None Include="Data\halton.hlsli" />
-    <None Include="Data\shadowsUtils.hlsli" />
-    <None Include="Data\shadowPass.rt.hlsl" />
-    <None Include="Data\lambert.ps.hlsl" />
-    <None Include="Data\finalStage.ps.hlsl" />
-    <None Include="Data\SVGF\MathConstants.hlsli" />
-    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl" />
-    <None Include="Data\reflection.hlsl" />
-    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl" />
-    <None Include="Data\SVGF\SVGFCommon.slang" />
-    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl" />
-    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl" />
-    <None Include="Data\SVGF\SVGFReproject.ps.hlsl" />
-    <None Include="Data\SVGF\MathHelpers.slang" />
-    <None Include="Data\compare.ps.hlsl" />
-    <None Include="Data\standardShadowRay.hlsli" />
+    <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFCommon.slang">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFilterMoments.ps.hlsl">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFFinalModulate.ps.hlsl">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFPackLinearZAndNormal.ps.hlsl">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\SVGFReproject.ps.hlsl">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathConstants.hlsli">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGF\MathHelpers.slang">
+      <Filter>Shader\SVGF</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\MathConstants.hlsli">
+      <Filter>Shader\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\MathHelpers.slang">
+      <Filter>Shader\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFCommon.slang">
+      <Filter>Shader\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFAtrous.ps.hlsl" />
+    <None Include="Data\SVGFShadow\SVGFFilterMoments.ps.hlsl" />
+    <None Include="Data\SVGFShadow\SVGFFinalModulate.ps.hlsl" />
+    <None Include="Data\SVGFShadow\SVGFPackLinearZAndNormal.ps.hlsl" />
+    <None Include="Data\SVGFShadow\SVGFReproject.ps.hlsl" />
+    <None Include="Data\aoCommonUtils.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\aoTracing.rt.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\commonUtils.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\compare.ps.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\shadowPass.rt.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\shadowsUtils.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\standardShadowRay.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\lambert.ps.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\reflection.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\finalStage.ps.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\halton.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\merge.ps.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{d5f9c458-2ce2-430c-a3a3-35968b745c79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\SVGF">
+      <UniqueIdentifier>{b96a6eb2-9e20-4343-af61-d966c35fbea3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\SVGFShadow">
+      <UniqueIdentifier>{592881d6-4d03-4dd4-a14f-c064778e00d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

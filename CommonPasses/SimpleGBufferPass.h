@@ -32,9 +32,9 @@ public:
 protected:
 	SimpleGBufferPass() : ::RenderPass("Simple G-Buffer Creation", "Simple G-Buffer Options") {}
 
-    // Implementation of RenderPass interface
-    bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void execute(RenderContext* pRenderContext) override;
+  // Implementation of RenderPass interface
+  bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+  void execute(RenderContext* pRenderContext) override;
 	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 
 	// Override some functions that provide information to the RenderPipeline class
@@ -42,9 +42,10 @@ protected:
 	bool usesRasterization() override { return true; }
 
     // Internal pass state
-    GraphicsState::SharedPtr    mpGfxState;             ///< Our graphics pipeline state (i.e., culling, raster, blend settings)
+  GraphicsState::SharedPtr    mpGfxState;             ///< Our graphics pipeline state (i.e., culling, raster, blend settings)
 	Scene::SharedPtr            mpScene;                ///< A pointer to the scene we're rendering
 	RasterLaunch::SharedPtr     mpRaster;               ///< A wrapper managing the shader for our g-buffer creation
+  Fbo::SharedPtr              mpInternalFbo;
 
 	// What's our "background" color?
 	vec3                        mBgColor = vec3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry

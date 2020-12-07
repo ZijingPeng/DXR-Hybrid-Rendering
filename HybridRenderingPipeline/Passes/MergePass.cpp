@@ -16,55 +16,45 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "FinalStagePass.h"
+#include "MergePass.h"
 
 namespace {
 	// Where is our shader located?
-    const char *kLambertShader = "finalStage.ps.hlsl";
-    const char *kAoChannel ="aoChannel";
-    const char *kShadowAOChannel = "shadowFilter";
-    const char *kDirectLightChannel = "directLightingChannel";
-    const char *kReflectionChannel = "reflectionFilter";
+    const char *kLambertShader = "merge.ps.hlsl";
 };
 
 // Define our constructor methods
-FinalStagePass::SharedPtr FinalStagePass::create(const std::string & bufferOut)
+MergePass::SharedPtr MergePass::create(const std::vector<std::string> &buffersToMerge, const std::string & bufferOut)
 { 
-	return SharedPtr(new FinalStagePass(bufferOut));
+	return SharedPtr(new MergePass(buffersToMerge, bufferOut));
 }
 
-FinalStagePass::FinalStagePass(const std::string &bufferOut)
-	: ::RenderPass("FinalStagePass Pass", "FinalStage Options")
+MergePass::MergePass(const std::vector<std::string> &buffersToMerge, const std::string &bufferOut)
+	: ::RenderPass("Merge Pass", "Merge Options")
 {
 	mOutputTexName = bufferOut;
+  mBuffersToMerge = buffersToMerge;
 }
 
-bool FinalStagePass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool MergePass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ kShadowAOChannel, kDirectLightChannel, kReflectionChannel });
+	mpResManager->requestTextureResource(mBuffersToMerge[0]);
+  mpResManager->requestTextureResource(mBuffersToMerge[1]);
 	mpResManager->requestTextureResource(mOutputTexName);
-
-	// Set the default scene to load
-	//mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
 
 	// Create our graphics state and an accumulation shader
 	mpGfxState = GraphicsState::create();
 	mpShader = FullscreenLaunch::create(kLambertShader);
-
 	return true;
 }
 
-void FinalStagePass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+void MergePass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
-
-	// When our renderer moves around we want to reset accumulation, so stash the scene pointer
-	mpScene = std::dynamic_pointer_cast<RtScene>(pScene);
-	if (!mpScene) return;
 }
 
-void FinalStagePass::resize(uint32_t width, uint32_t height)
+void MergePass::resize(uint32_t width, uint32_t height)
 {
 	// We need a framebuffer to attach to our graphics pipe state (when running our full-screen pass).  We can ask our
 	//    resource manager to create one for us, with specified width, height, and format and one color buffer.
@@ -72,33 +62,25 @@ void FinalStagePass::resize(uint32_t width, uint32_t height)
 	mpGfxState->setFbo(mpInternalFbo);
 }
 
-void FinalStagePass::renderGui(Gui* pGui)
+void MergePass::renderGui(Gui* pGui)
 {
-	// Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
-    pGui->addText( (std::string("Direct Ligting buffer:   ") + mOutputTexName).c_str() );
-    pGui->addText("");  
-
-	// Display a count of accumulated frames
-	pGui->addText("");
 }
 
-void FinalStagePass::execute(RenderContext* pRenderContext)
+void MergePass::execute(RenderContext* pRenderContext)
 {
     // Grab the texture to write to
-	Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputTexName);
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTexName, vec4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
-    if (!pDstTex) return;
+  if (!pDstTex) return;
 
-	// Pass our G-buffer textures down to the HLSL so we can shade
-	auto shaderVars = mpShader->getVars();
-	shaderVars["gReflection"] = mpResManager->getTexture(kReflectionChannel);
-	shaderVars["gDirectLighting"] = mpResManager->getTexture(kDirectLightChannel);
-	shaderVars["gShadowAO"] = mpResManager->getTexture(kShadowAOChannel);
+  // Pass our G-buffer textures down to the HLSL so we can shade
+  auto shaderVars = mpShader->getVars();
+  shaderVars["gM1"] = mpResManager->getTexture(mBuffersToMerge[0]);
+  shaderVars["gM2"] = mpResManager->getTexture(mBuffersToMerge[1]);
 
   // Execute the accumulation shader
   mpShader->execute(pRenderContext, mpGfxState);
-
   // We've accumulated our result.  Copy that back to the input/output buffer
   pRenderContext->blit(mpInternalFbo->getColorTexture(0)->getSRV(), pDstTex->getRTV());
 }

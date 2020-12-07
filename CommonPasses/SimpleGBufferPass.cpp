@@ -35,19 +35,19 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 	mpResManager->requestTextureResource("MaterialDiffuse");
 	mpResManager->requestTextureResource("MaterialSpecRough");
 	mpResManager->requestTextureResource("MaterialEmissive");
-    mpResManager->requestTextureResource("PosNormalFWidth", ResourceFormat::RG32Float);
-    mpResManager->requestTextureResource("LinearZAndDeriv", ResourceFormat::RG32Float);
-    mpResManager->requestTextureResource("MotiveVectors", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("PosNormalFWidth", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("LinearZAndDeriv", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("MotiveVectors", ResourceFormat::RG32Float);
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
-    // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
-    mpGfxState = GraphicsState::create();
+  // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
+  mpGfxState = GraphicsState::create();
 
 	// Create our wrapper for a scene-rasterization pass.
 	mpRaster = RasterLaunch::createFromFiles(kGbufVertShader, kGbufFragShader);
-	mpRaster->setScene(mpScene);
+	mpRaster->setScene(mpScene);                   
 
-    return true;
+  return true;
 }
 
 void SimpleGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
@@ -63,25 +63,23 @@ void SimpleGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPt
 
 void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 {
-	// Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
-	Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
+  // Failed to create a valid FBO?  We're done.
+
+	mpInternalFbo = mpResManager->createManagedFbo(
 		{
 			"WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough",
-			"MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors" 
+			"MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors"
 		}, // Names of color buffers
 		"Z-Buffer"
-	);                                                                                      // Names of depth buffer
-
-    // Failed to create a valid FBO?  We're done.
-    if (!outputFbo) return;
-
+	);
+  if (!mpInternalFbo) return;
 	// Clear our g-buffer.  All color buffers to (0,0,0,0), depth to 1, stencil to 0
-	pRenderContext->clearFbo(outputFbo.get(), vec4(0, 0, 0, 0), 1.0f, 0);
+	pRenderContext->clearFbo(mpInternalFbo.get(), vec4(0, 0, 0, 0), 1.0f, 0);
 
 	// Separately clear our diffuse color buffer to the background color, rather than black
-	pRenderContext->clearUAV(outputFbo->getColorTexture(2)->getUAV().get(), vec4(mBgColor, 1.0f));
+	pRenderContext->clearUAV(mpInternalFbo->getColorTexture(2)->getUAV().get(), vec4(mBgColor, 1.0f));
 	auto shaderVars = mpRaster->getVars();
-	shaderVars["PerImageCB"]["gRenderTargetDim"] = float2(outputFbo->getWidth(), outputFbo->getHeight());
+	shaderVars["PerImageCB"]["gRenderTargetDim"] = float2(mpInternalFbo->getWidth(), mpInternalFbo->getHeight());
 	// Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
-	mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
+	mpRaster->execute(pRenderContext, mpGfxState, mpInternalFbo);
 }

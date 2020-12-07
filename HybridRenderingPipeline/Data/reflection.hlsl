@@ -115,7 +115,7 @@ void ReflectRayGen()
 {
 	// Where is this ray on screen?
 	uint2 launchIndex = DispatchRaysIndex().xy;
-	uint2 launchDim   = DispatchRaysDimensions().xy;
+	uint2 launchDim = DispatchRaysDimensions().xy;
 
 	// Initialize random seed per sample based on a screen position and temporally varying count
 	uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
@@ -164,7 +164,7 @@ void ReflectRayGen()
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-		
+
 		// Grab our geometric normal.
 		float3 geoN = normalize(extraData.yzw);
 		if (dot(geoN, V) <= 0.0f) geoN = -geoN;

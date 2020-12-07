@@ -24,7 +24,9 @@
 #include "Passes/DirectLightingPass.h"
 #include "Passes/FinalStagePass.h"
 #include "Passes/SVGFPass.h"
+#include "Passes/SVGFShadowPass.h"
 #include "Passes/ComparePass.h"
+#include "Passes/MergePass.h"
 #include "../CommonPasses/SimpleGBufferPass.h"
 #include "../CommonPasses/SimpleAccumulationPass.h"
 #include "../CommonPasses/CopyToOutputPass.h"
@@ -34,34 +36,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// Create our rendering pipeline
 	RenderingPipeline *pipeline = new RenderingPipeline();
 
-	// Add passes into our pipeline
-	/*pipeline->setPass(0, SimpleGBufferPass::create());        
-	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
-	pipeline->setPass(2, SimpleAccumulationPass::create("aoChannel"));
-	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, SimpleAccumulationPass::create("shadowChannel"));
-	pipeline->setPass(5, ReflectionPass::create("reflectionChannel"));
-	pipeline->setPass(6, SimpleAccumulationPass::create("reflectionChannel"));
-	pipeline->setPass(7, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
-    pipeline->setPass(9, SVGFPass::create("filteredOutput", "finalOutput"));
-	pipeline->setPass(10, CopyToOutputPass::create());*/
-	//pipeline->setPass(9, SimpleAccumulationPass::create());
-
 	pipeline->setPass(0, SimpleGBufferPass::create());
 	pipeline->setPass(1, AmbientOcclusionPass::create("aoChannel"));
 	pipeline->setPass(2, ReflectionPass::create("reflectionChannel"));
 	pipeline->setPass(3, ShadowPass::create("shadowChannel"));
-	pipeline->setPass(4, DirectLightingPass::create("directLightingChannel"));
-	pipeline->setPass(5, FinalStagePass::create("finalOutput"));
-	pipeline->setPass(6, SVGFPass::create("filteredOutput", "finalOutput"));
-	//pipeline->setPass(7, CopyToOutputPass::create());
-	pipeline->setPass(7, ComparePass::create());
+    pipeline->setPass(4, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
+	pipeline->setPass(5, DirectLightingPass::create("directLightingChannel"));
+	pipeline->setPass(6, SVGFPass::create("reflectionFilter", "reflectionChannel"));
+	pipeline->setPass(7, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
+	pipeline->setPass(8, FinalStagePass::create("finalOutput"));
+	pipeline->setPass(9, ComparePass::create("compareOutput"));
+	pipeline->setPass(10, CopyToOutputPass::create());
+	
 
 	// Define a set of config / window parameters for our program
-    SampleConfig config;
-    config.windowDesc.title = "Hybrid Rendering";
-    config.windowDesc.resizableWindow = true;
+  SampleConfig config;
+  config.windowDesc.title = "Hybrid Rendering";
+  config.windowDesc.resizableWindow = true;
 
 	// Start our program!
 	RenderingPipeline::run(pipeline, config);

@@ -16,41 +16,41 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+// This class is to shading for final stage
+
 #pragma once
 #include "../SharedUtils/RenderPass.h"
-#include "../SharedUtils/SimpleVars.h"
 #include "../SharedUtils/FullscreenLaunch.h"
 
-class ComparePass : public ::RenderPass, inherit_shared_from_this<::RenderPass, ComparePass>
+class MergePass : public ::RenderPass, inherit_shared_from_this<::RenderPass, MergePass>
 {
 public:
-	using SharedPtr = std::shared_ptr<ComparePass>;
-	using SharedConstPtr = std::shared_ptr<const ComparePass>;
+    using SharedPtr = std::shared_ptr<MergePass>;
 
-	static SharedPtr create(const std::string &output) { return SharedPtr(new ComparePass(output)); }
-	virtual ~ComparePass() = default;
+	static SharedPtr create(const std::vector<std::string> &buffersToMerge , const std::string &bufferToAccumulate = ResourceManager::kOutputChannel);
+	virtual ~MergePass() = default;
 
 protected:
-	ComparePass(const std::string &output);
+	MergePass(const std::vector<std::string> &buffersToMerge , const std::string &bufferToAccumulate);
 
-	// Implementation of SimpleRenderPass interface
+    // Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-	void execute(RenderContext* pRenderContext) override;
-	void renderGui(Gui* pGui) override;
+	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+  void execute(RenderContext* pRenderContext) override;
+  void renderGui(Gui* pGui) override;
 	void resize(uint32_t width, uint32_t height) override;
-    void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
-	void updateDropdown(ResourceManager::SharedPtr pResManager);
+
+	// The RenderPass class defines various methods we can override to specify this pass' properties. 
 	bool appliesPostprocess() override { return true; }
 
-	// Information about the rendering texture we're accumulating into
-	std::string       mOutputChannel;
-	Gui::DropdownList mLeftBuffers;
-	Gui::DropdownList mRightBuffers;  
-	uint32_t          mSelectLeft = 0xFFFFFFFFu;
-	uint32_t          mSelectRight = 0xFFFFFFFFu;
-  
-	// State for our accumulation shader
-	FullscreenLaunch::SharedPtr   mpCompareShader;
+	std::string                   mOutputTexName;
+  std::vector<std::string>      mBuffersToMerge;
+
+	// State for our shader
+	FullscreenLaunch::SharedPtr   mpShader;
 	GraphicsState::SharedPtr      mpGfxState;
 	Fbo::SharedPtr                mpInternalFbo;
+
+	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
+	Scene::SharedPtr              mpScene;
 };

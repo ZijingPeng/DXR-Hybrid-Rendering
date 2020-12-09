@@ -49,6 +49,7 @@ Texture2D<float4> gNorm;
 Texture2D<float4> gDiffuseMatl;
 Texture2D<float4> gSpecMatl;
 Texture2D<float4>   gExtraMatl;
+Texture2D<float4>   gShadow;
 RWTexture2D<float4> gOutput;
 
 #include "standardShadowRay.hlsli"
@@ -127,6 +128,7 @@ void ReflectRayGen()
 	float4 specular = gSpecMatl[launchIndex];
 	float roughness = gSpecMatl[launchIndex].w;
 	float4 extraData = gExtraMatl[launchIndex];
+	float4 shadow = gNorm[launchIndex];
 
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 	float3 N = worldNorm.xyz;
@@ -139,8 +141,6 @@ void ReflectRayGen()
 	// Make sure our normal is pointed the right direction
 	if (dot(N, V) <= 0.0f) N = -N;
 	float NdotV = dot(N, V);
-
-
 
 	bool isGeometryValid = (worldPos.w != 0.0f);
 	float3 shadeColor = isGeometryValid ? float3(0, 0, 0) : diffuse.rgb;
@@ -189,7 +189,7 @@ void ReflectRayGen()
 		float probDiffuse = probabilityToSampleDiffuse(diffuse.xyz, specular.xyz);
 		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
 		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
-		shadeColor = bounceColor * (1.0 - roughness);
+		//shadeColor = bounceColor * (1.0 - roughness);
 	}
 
 	bool colorsNan = any(isnan(shadeColor));

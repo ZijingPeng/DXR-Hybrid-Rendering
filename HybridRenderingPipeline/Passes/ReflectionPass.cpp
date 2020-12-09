@@ -38,11 +38,8 @@ bool ReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::
 {
 	// Keep a copy of our resource manager; request needed buffer resources
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams", "shadowChannel" });
 	mpResManager->requestTextureResource(mAccumChannel);
-
-	// Set the default scene to load
-	mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -85,6 +82,7 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
 	rayGenVars["gSpecMatl"] = mpResManager->getTexture("MaterialSpecRough");
 	rayGenVars["gExtraMatl"] = mpResManager->getTexture("MaterialExtraParams");
+	rayGenVars["gShadow"] = mpResManager->getTexture("shadowChannel");
 	rayGenVars["gOutput"] = pDstTex;
 
 	// Shoot our rays and shade our primary hit points

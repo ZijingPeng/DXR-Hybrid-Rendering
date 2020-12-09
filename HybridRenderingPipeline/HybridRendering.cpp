@@ -40,7 +40,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RenderingPipeline *pipeline = new RenderingPipeline();
 
 	int idx = 0;
-	bool useAccum = true;
+	bool useAccum = false;
 	bool useRaytracing = false;
 
 	pipeline->setPass(idx++, SimpleGBufferPass::create());

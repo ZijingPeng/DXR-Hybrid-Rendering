@@ -25,9 +25,10 @@ struct IndirectRayPayload
 	uint   rndSeed;  // Our random seed, so we pick uncorrelated RNGs along our ray
 	uint   rayDepth; // What is the depth of our current ray?
 	HaltonState hState;
+	bool isOpenScene;
 };
 
-float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPathLen, uint seed, HaltonState hState, uint curDepth)
+float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPathLen, uint seed, HaltonState hState, uint curDepth, bool isOpenScene)
 {
 	// Setup our indirect ray
 	RayDesc rayColor;
@@ -42,6 +43,7 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPat
 	payload.rndSeed = seed;
 	payload.rayDepth = curDepth + 1;
 	payload.hState = hState;
+	payload.isOpenScene = isOpenScene;
 
 	// Trace our ray to get a color in the indirect direction.  Use hit group #1 and miss shader #1
 	TraceRay(gRtScene, 0, 0xFF, 1, hitProgramCount, 1, rayColor, payload);
@@ -53,15 +55,8 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPat
 [shader("miss")]
 void IndirectMiss(inout IndirectRayPayload rayData)
 {
-	// Load some information about our lightprobe texture
-	float2 dims;
-	gEnvMap.GetDimensions(dims.x, dims.y);
-
-	// Convert our ray direction to a (u,v) coordinate
-	float2 uv = wsVectorToLatLong(WorldRayDirection());
-
-	// Load our background color, then store it into our ray payload
-	rayData.color = gEnvMap[uint2(uv * dims)].rgb;
+	rayData.color = rayData.isOpenScene? float3(0.106, 0.162, 0.184) : float3(0);
+	//rayData.color = float3(0.106, 0.162, 0.184);
 }
 
 [shader("anyhit")]
@@ -70,41 +65,6 @@ void IndirectAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectio
 	// Is this a transparent part of the surface?  If so, ignore this hit
 	if (alphaTestFails(attribs))
 		IgnoreHit();
-}
-
-float3 lambertianDirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 norm, float3 difColor)
-{
-	// Pick a random light from our scene to shoot a shadow ray towards
-	int lightToSample = min(int(nextRand(rndSeed) * gLightsCount), gLightsCount - 1);
-
-	// Query the scene to find info about the randomly selected light
-	float distToLight;
-	float3 lightIntensity;
-	float3 toLight;
-	getLightData(lightToSample, hit, toLight, lightIntensity, distToLight);
-
-	// Compute our lambertion term (L dot N)
-	float LdotN = saturate(dot(norm, toLight));
-
-	// Shoot our shadow ray to our randomly selected light
-	float shadowMult = float(gLightsCount) * shadowRayVisibility(rndSeed, hit, toLight, gMinT, distToLight);
-
-	// Return the Lambertian shading color using the physically based Lambertian term (albedo / pi)
-	return shadowMult * LdotN * lightIntensity * difColor / M_PI;
-}
-
-float3 lambertianIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 norm, float3 difColor, uint rayDepth)
-{
-	// Shoot a randomly selected cosine-sampled diffuse ray.
-	float3 L = getCosHemisphereSample(rndSeed, norm);
-	float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth);
-
-	// Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-	if (dot(norm, L) <= 0.0f) {
-		bounceColor = float3(0, 0, 0);
-	}
-
-	return bounceColor * difColor;
 }
 
 float3 ggxDirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, float3 V, float3 dif, float3 spec, float rough)
@@ -143,7 +103,7 @@ float3 ggxDirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, f
 	return shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / M_PI);
 }
 
-float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth, bool inverseRoughness)
+float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N, float3 V, float3 dif, float3 spec, float rough, uint rayDepth, bool isOpenScene)
 {
 	// We have to decide whether we sample our diffuse or specular/ggx lobe.
 	float probDiffuse = probabilityToSampleDiffuse(dif, spec);
@@ -157,10 +117,7 @@ float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N,
 	{
 		// Shoot a randomly selected cosine-sampled diffuse ray.
 		float3 L = getCosHemisphereSample(rndSeed, N);
-		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth);
-
-		// Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-		if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
+		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth, isOpenScene);
 
 		// Accumulate the color: (NdotL * incomingLight * dif / pi) 
 		// Probability of sampling:  (NdotL / pi) * probDiffuse
@@ -176,10 +133,7 @@ float3 ggxIndirect(inout uint rndSeed, HaltonState hState, float3 hit, float3 N,
 		float3 L = normalize(2.f * dot(V, H) * H - V);
 
 		// Compute our color by tracing a ray in this direction
-		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth);
-
-		// Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-		if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
+		float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, hState, rayDepth, isOpenScene);
 
 		// Compute some dot products needed for shading
 		float  NdotL = saturate(dot(N, L));
@@ -223,7 +177,7 @@ void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleInterse
 		// Use the same normal for the normal-mapped and non-normal mapped vectors... This means we could get light
 		//     leaks at secondary surfaces with normal maps due to indirect rays going below the surface.  This
 		//     isn't a huge issue, but this is a (TODO: fix)
-		rayData.color += ggxIndirect(rayData.rndSeed, rayData.hState, shadeData.posW, shadeData.N, shadeData.N, shadeData.V,
-			shadeData.diffuse, shadeData.specular, shadeData.roughness, rayData.rayDepth, gInverseRoughness);
+		rayData.color += ggxIndirect(rayData.rndSeed, rayData.hState, shadeData.posW, shadeData.N, shadeData.V,
+			shadeData.diffuse, shadeData.specular, shadeData.roughness, rayData.rayDepth, rayData.isOpenScene);
 	}
 }

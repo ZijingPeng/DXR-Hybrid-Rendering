@@ -39,12 +39,12 @@ bool GlobalIlluminationPass::initialize(RenderContext* pRenderContext, ResourceM
 {
 	// Stash a copy of our resource manager so we can get rendering resources
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams", "Emissive" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "Emissive" });
 	mpResManager->requestTextureResource(mOutputTextureName);
 	mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
 	// Set the default scene to load
-	mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
+	mpResManager->setDefaultSceneName("Data/picapica/picapica.fscene");
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -79,8 +79,7 @@ void GlobalIlluminationPass::renderGui(Gui* pGui)
 		                            mDoDirectGI);
 	dirty |= (int)pGui->addCheckBox(mDoIndirectGI ? "Shooting global illumination rays" : "Skipping global illumination", 
 		                            mDoIndirectGI);
-	dirty |= (int)pGui->addCheckBox(mInverseRoughness ? "Inverse roughness" : "Not inverse roughness",
-		mInverseRoughness);
+	dirty |= (int)pGui->addCheckBox("Is Open Scene", mIsOpenScene);
 
 	if (dirty) setRefreshFlag();
 }
@@ -102,15 +101,13 @@ void GlobalIlluminationPass::execute(RenderContext* pRenderContext)
 	globalVars["GlobalCB"]["gDoDirectGI"]   = mDoDirectGI;
 	globalVars["GlobalCB"]["gMaxDepth"]     = mUserSpecifiedRayDepth;
     globalVars["GlobalCB"]["gEmitMult"]     = 1.0f;
-	globalVars["GlobalCB"]["gInverseRoughness"] = mInverseRoughness;
+	globalVars["GlobalCB"]["gOpenScene"]	= mIsOpenScene;
 	globalVars["gPos"]         = mpResManager->getTexture("WorldPosition");
 	globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
 	globalVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
 	globalVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
-	globalVars["gExtraMatl"]   = mpResManager->getTexture("MaterialExtraParams");
     globalVars["gEmissive"]    = mpResManager->getTexture("Emissive");
 	globalVars["gOutput"]      = pDstTex;
-	globalVars["gEnvMap"] = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
 	// Shoot our rays and shade our primary hit points
 	mpRays->execute( pRenderContext, mpResManager->getScreenSize() );

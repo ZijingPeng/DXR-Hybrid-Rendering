@@ -26,6 +26,7 @@ namespace {
     const char *kDirectLightChannel = "directLightingChannel";
     const char *kReflectionChannel = "reflectionFilter";
 	const char* kEmissiveChannel = "MaterialEmissive";
+	const char* kWorldPos = "WorldPosition";
 };
 
 // Define our constructor methods
@@ -44,7 +45,7 @@ bool FinalStagePass::initialize(RenderContext* pRenderContext, ResourceManager::
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ kShadowAOChannel, kDirectLightChannel, kReflectionChannel });
+	mpResManager->requestTextureResources({ kWorldPos, kShadowAOChannel, kDirectLightChannel, kReflectionChannel });
 	mpResManager->requestTextureResource(mOutputTexName);
 
 	// Create our graphics state and an accumulation shader
@@ -94,6 +95,7 @@ void FinalStagePass::execute(RenderContext* pRenderContext)
 	shaderVars["gDirectLighting"] = mpResManager->getTexture(kDirectLightChannel);
 	shaderVars["gShadowAO"] = mpResManager->getTexture(kShadowAOChannel);
 	shaderVars["gEmissive"] = mpResManager->getTexture(kEmissiveChannel);
+	shaderVars["gPos"] = mpResManager->getTexture(kWorldPos);
 
   // Execute the accumulation shader
   mpShader->execute(pRenderContext, mpGfxState);

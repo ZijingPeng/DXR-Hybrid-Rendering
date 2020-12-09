@@ -49,7 +49,6 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gDiffuseMatl;
 Texture2D<float4> gSpecMatl;
-Texture2D<float4>   gExtraMatl;
 Texture2D<float4>   gShadow;
 RWTexture2D<float4> gOutput;
 
@@ -124,8 +123,7 @@ void ReflectRayGen()
 	float NdotV = dot(N, V);
 
 	bool isGeometryValid = (worldPos.w != 0.0f);
-	float3 shadeColor = (!isGeometryValid && gOpenScene) ? float3(0.48, 0.75, 0.85) : float3(0, 0, 0);
-
+	float3 shadeColor;
 	if (isGeometryValid)
 	{
 		HaltonState hState;

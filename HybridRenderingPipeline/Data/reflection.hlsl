@@ -90,6 +90,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	getLightData(lightToSample, hit, L, lightIntensity, distToLight);
 	float NdotL = saturate(dot(N, L));
 	float shadowMult = float(gLightsCount) * shadowRayVisibility(hit, L, gMinT, distToLight);
+	shadowMult = max(shadowMult, 0.05);
 
 	// Compute half vectors and additional dot products for GGX
 	float3 H = normalize(V + L);

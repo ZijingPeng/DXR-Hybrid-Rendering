@@ -32,7 +32,7 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 	float4 directLighting = gDirectLighting[pixelPos];
 	float4 shadow = gShadowAO[pixelPos];
 	float4 emissive = gEmissive[pixelPos];
-	float ambient = 0.03;
+	float ambient = 0.1;
 
 	float3 shadeColor;
 

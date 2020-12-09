@@ -43,8 +43,6 @@ shared Texture2D<float4>   gPos;
 shared Texture2D<float4>   gNorm;
 shared Texture2D<float4>   gDiffuseMatl;
 shared Texture2D<float4>   gSpecMatl;
-shared Texture2D<float4>   gExtraMatl;
-shared Texture2D<float4>   gEnvMap;
 shared Texture2D<float4>   gEmissive;
 shared RWTexture2D<float4> gOutput;
 
@@ -88,7 +86,7 @@ void SimpleDiffuseGIRayGen()
 	bool isGeometryValid = (worldPos.w != 0.0f);
 
 	// Extract and compute some material and geometric parameters
-	float roughness = specMatlColor.a;
+	float roughness = specMatlColor.a * specMatlColor.a;
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 
 	// Make sure our normal is pointed the right direction
@@ -139,5 +137,4 @@ void SimpleDiffuseGIRayGen()
 
 	// Store out the color of this shaded pixel
 	gOutput[launchIndex] = float4(colorsNan?float3(0,0,0):shadeColor, 1.0f);
-	//gOutput[launchIndex] = float4(specMatlColor.a, specMatlColor.a, specMatlColor.a, 1.0f);
 }

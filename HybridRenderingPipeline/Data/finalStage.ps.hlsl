@@ -19,7 +19,7 @@
 #include "HostDeviceSharedMacros.h"
 #include "HostDeviceData.h"      
 
-
+Texture2D<float4>   gPos;
 Texture2D<float4>   gReflection; 
 Texture2D<float4>   gDirectLighting;
 Texture2D<float4>   gShadowAO;
@@ -28,6 +28,7 @@ Texture2D<float4>   gEmissive;
 float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
     uint2 pixelPos = (uint2)pos.xy;
+	float4 worldPos = gPos[pixelPos];
     float4 reflection = gReflection[pixelPos];
 	float4 directLighting = gDirectLighting[pixelPos];
 	float4 shadow = gShadowAO[pixelPos];
@@ -38,7 +39,7 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 
 	// Todo: reflection
 	shadeColor = (directLighting * (float4(ambient) + shadow)).rgb + reflection.rgb + emissive.rgb;
-	//shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
-	//shadeColor = reflection.rgb;
+	bool isGeometryValid = (worldPos.w != 0.0f);
+	shadeColor = (worldPos.w != 0.0f) ? shadeColor : shadeColor + float3(0.48, 0.75, 0.85);
 	return float4(shadeColor, 1.0f);
 }

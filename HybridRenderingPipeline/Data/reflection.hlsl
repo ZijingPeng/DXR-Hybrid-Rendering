@@ -33,6 +33,7 @@ struct ReflectRayPayload
 {
 	float4 reflectColor;
 	uint rndSeed;
+	bool isOpenScene;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -40,7 +41,7 @@ cbuffer RayGenCB
 {
 	uint  gFrameCount;
 	float gMinT;
-	bool gReverseRoughness;
+	bool gOpenScene;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -48,7 +49,6 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gDiffuseMatl;
 Texture2D<float4> gSpecMatl;
-Texture2D<float4>   gExtraMatl;
 Texture2D<float4>   gShadow;
 RWTexture2D<float4> gOutput;
 
@@ -57,7 +57,7 @@ RWTexture2D<float4> gOutput;
 [shader("miss")]
 void ReflectMiss(inout ReflectRayPayload hitData : SV_RayPayload)
 {
-	gOutput[DispatchRaysIndex().xy] = float4(0, 0, 0, 1.0f);
+	hitData.reflectColor = hitData.isOpenScene ? float4(0.053, 0.081, 0.092, 1.0f) : float4(0, 0, 0, 1);
 }
 
 [shader("anyhit")]
@@ -92,23 +92,8 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float shadowMult = float(gLightsCount) * shadowRayVisibility(hit, L, gMinT, distToLight);
 	shadowMult = max(shadowMult, 0.08);
 
-	// Compute half vectors and additional dot products for GGX
-	float3 H = normalize(V + L);
-	float NdotH = saturate(dot(N, H));
-	float LdotH = saturate(dot(L, H));
-	float NdotV = saturate(dot(N, V));
-
-	// Evaluate terms for our GGX BRDF model
-	float  D = ggxNormalDistribution(NdotH, rough);
-	float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);
-	float3 F = schlickFresnel(spec, LdotH);
-
-	// Evaluate the Cook-Torrance Microfacet BRDF model
-	//     Cancel out NdotL here & the next eq. to avoid catastrophic numerical precision issues.
-	float3 ggxTerm = D * G * F / (4 * NdotV /* * NdotL */);
-
 	// Compute our final color (combining diffuse lobe plus specular GGX lobe)
-	rayData.reflectColor += float4(shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / PI), 1);
+	rayData.reflectColor += float4(shadowMult * lightIntensity * ( NdotL * dif / PI), 1);
 }
 
 
@@ -128,24 +113,17 @@ void ReflectRayGen()
 	float4 diffuse = gDiffuseMatl[launchIndex];
 	float4 specular = gSpecMatl[launchIndex];
 	float roughness = gSpecMatl[launchIndex].w;
-	float4 extraData = gExtraMatl[launchIndex];
 	float4 shadow = gNorm[launchIndex];
 
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 	float3 N = worldNorm.xyz;
-	if (gReverseRoughness)
-	{
-		roughness = 1 - roughness;
-		specular = float4(roughness, roughness, roughness, roughness);
-	}
 
 	// Make sure our normal is pointed the right direction
 	if (dot(N, V) <= 0.0f) N = -N;
 	float NdotV = dot(N, V);
 
 	bool isGeometryValid = (worldPos.w != 0.0f);
-	float3 shadeColor = isGeometryValid ? float3(0, 0, 0) : diffuse.rgb;
-
+	float3 shadeColor;
 	if (isGeometryValid)
 	{
 		HaltonState hState;
@@ -154,7 +132,7 @@ void ReflectRayGen()
 		float rnd1 = frac(haltonNext(hState) + nextRand(randSeed));
 		float rnd2 = frac(haltonNext(hState) + nextRand(randSeed));
 		float2 Xi = float2(rnd1, rnd2);
-		float3 H = sampleBeckmannNormal(Xi, N, roughness);
+		float3 H = getGGXMicrofacet(Xi, N, roughness);
 		float3 L = normalize(2.0 * dot(V, H) * H - V);
 
 		RayDesc rayReflect;
@@ -162,15 +140,10 @@ void ReflectRayGen()
 		rayReflect.Direction = L;
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
-		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed };
+		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed, gOpenScene };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-		// Grab our geometric normal.
-		float3 geoN = normalize(extraData.yzw);
-		if (dot(geoN, V) <= 0.0f) geoN = -geoN;
-
 		float3 bounceColor = rayPayload.reflectColor.xyz;
-		if (dot(geoN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
 
 		// Compute some dot products needed for shading
 		float  NdotL = saturate(dot(N, L));
@@ -181,5 +154,4 @@ void ReflectRayGen()
 	bool colorsNan = any(isnan(shadeColor));
 	// Store out the color of this shaded pixel
 	gOutput[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
-
 }

@@ -35,7 +35,7 @@ shared cbuffer GlobalCB
 	bool  gDoDirectGI;     // A boolean determining if we should compute direct lighting
 	uint  gMaxDepth;       // Maximum number of recursive bounces to allow
     float gEmitMult;       // Multiply emissive amount by this factor (set to 1, usually)
-	bool  gInverseRoughness;
+	bool  gOpenScene;
 }
 
 // Input and out textures that need to be set by the C++ code (for the ray gen shader)
@@ -43,8 +43,6 @@ shared Texture2D<float4>   gPos;
 shared Texture2D<float4>   gNorm;
 shared Texture2D<float4>   gDiffuseMatl;
 shared Texture2D<float4>   gSpecMatl;
-shared Texture2D<float4>   gExtraMatl;
-shared Texture2D<float4>   gEnvMap;
 shared Texture2D<float4>   gEmissive;
 shared RWTexture2D<float4> gOutput;
 
@@ -81,14 +79,13 @@ void SimpleDiffuseGIRayGen()
 	float4 worldNorm     = gNorm[launchIndex];
 	float4 difMatlColor  = gDiffuseMatl[launchIndex];
 	float4 specMatlColor = gSpecMatl[launchIndex];
-	float4 extraData     = gExtraMatl[launchIndex];
     float4 pixelEmissive = gEmissive[launchIndex];
 	
 	// Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
 	bool isGeometryValid = (worldPos.w != 0.0f);
 
 	// Extract and compute some material and geometric parameters
-	float roughness = specMatlColor.a;
+	float roughness = specMatlColor.a * specMatlColor.a;
 	float3 V = normalize(gCamera.posW - worldPos.xyz);
 
 	// Make sure our normal is pointed the right direction
@@ -101,8 +98,6 @@ void SimpleDiffuseGIRayGen()
 	//     be *below* the surface (due to the normal map perturbations), which will 
 	//     cause light leaking.  We solve by ignoring the ray's contribution if it
 	//     is below the horizon.  
-	float3 noMapN = normalize(extraData.yzw);
-	if (dot(noMapN, V) <= 0.0f) noMapN = -noMapN;
 
 	// If we don't hit any geometry, our difuse material contains our background color.
 	float3 shadeColor    = isGeometryValid ? float3(0,0,0) : difMatlColor.rgb;
@@ -128,8 +123,8 @@ void SimpleDiffuseGIRayGen()
 
 		// (Optionally) do indirect lighting for global illumination
 		if (gDoIndirectGI && (gMaxDepth > 0))
-			shadeColor += ggxIndirect(randSeed, hState, worldPos.xyz, worldNorm.xyz, noMapN,
-				                      V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, gInverseRoughness);
+			shadeColor += ggxIndirect(randSeed, hState, worldPos.xyz, worldNorm.xyz,
+				                      V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, gOpenScene);
 	}
 	
 	// Since we didn't do a good job above catching NaN's, div by 0, infs, etc.,
@@ -139,5 +134,4 @@ void SimpleDiffuseGIRayGen()
 
 	// Store out the color of this shaded pixel
 	gOutput[launchIndex] = float4(colorsNan?float3(0,0,0):shadeColor, 1.0f);
-	//gOutput[launchIndex] = float4(specMatlColor.a, specMatlColor.a, specMatlColor.a, 1.0f);
 }

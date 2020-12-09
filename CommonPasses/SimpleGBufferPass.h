@@ -48,5 +48,5 @@ protected:
   Fbo::SharedPtr              mpInternalFbo;
 
 	// What's our "background" color?
-	vec3                        mBgColor = vec3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+	vec3                        mBgColor = vec3(0.48, 0.75, 0.85);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
 };

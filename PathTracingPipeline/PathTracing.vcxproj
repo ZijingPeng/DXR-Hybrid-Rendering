@@ -14,8 +14,10 @@
     <ClCompile Include="..\CommonPasses\LightProbeGBufferPass.cpp" />
     <ClCompile Include="..\CommonPasses\SimpleAccumulationPass.cpp" />
     <ClCompile Include="..\CommonPasses\SimpleDiffuseGIPass.cpp" />
+    <ClCompile Include="..\CommonPasses\SimpleGBufferPass.cpp" />
     <ClCompile Include="..\CommonPasses\SimpleToneMappingPass.cpp" />
     <ClCompile Include="..\SharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="..\SharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="..\SharedUtils\RayLaunch.cpp" />
     <ClCompile Include="..\SharedUtils\RenderingPipeline.cpp" />
     <ClCompile Include="..\SharedUtils\RenderPass.cpp" />
@@ -29,8 +31,10 @@
     <ClInclude Include="..\CommonPasses\LightProbeGBufferPass.h" />
     <ClInclude Include="..\CommonPasses\SimpleAccumulationPass.h" />
     <ClInclude Include="..\CommonPasses\SimpleDiffuseGIPass.h" />
+    <ClInclude Include="..\CommonPasses\SimpleGBufferPass.h" />
     <ClInclude Include="..\CommonPasses\SimpleToneMappingPass.h" />
     <ClInclude Include="..\SharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="..\SharedUtils\RasterLaunch.h" />
     <ClInclude Include="..\SharedUtils\RayLaunch.h" />
     <ClInclude Include="..\SharedUtils\RenderingPipeline.h" />
     <ClInclude Include="..\SharedUtils\RenderPass.h" />

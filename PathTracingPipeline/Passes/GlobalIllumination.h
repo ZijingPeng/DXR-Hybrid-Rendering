@@ -57,7 +57,7 @@ protected:
 
 	int32_t                 mUserSpecifiedRayDepth = 1;   ///<  What is the current maximum ray depth
 	const int32_t           mMaxPossibleRayDepth = 8;     ///<  The largest ray depth we support (without recompile)
-	bool                    mInverseRoughness = false;
+	bool                    mIsOpenScene = true;
 
 	// What texture should was ask the resource manager to store our result in?
 	std::string             mOutputTextureName;

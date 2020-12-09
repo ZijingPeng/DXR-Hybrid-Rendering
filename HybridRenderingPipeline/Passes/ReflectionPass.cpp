@@ -38,7 +38,7 @@ bool ReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::
 {
 	// Keep a copy of our resource manager; request needed buffer resources
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams", "shadowChannel" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "shadowChannel" });
 	mpResManager->requestTextureResource(mAccumChannel);
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
@@ -75,13 +75,12 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	auto rayGenVars = mpRays->getRayGenVars();
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
 	rayGenVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
-	rayGenVars["RayGenCB"]["gReverseRoughness"] = mReverseRoughness;
+	rayGenVars["RayGenCB"]["gOpenScene"] = mIsOpenScene;
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	rayGenVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
 	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
 	rayGenVars["gSpecMatl"] = mpResManager->getTexture("MaterialSpecRough");
-	rayGenVars["gExtraMatl"] = mpResManager->getTexture("MaterialExtraParams");
 	rayGenVars["gShadow"] = mpResManager->getTexture("shadowChannel");
 	rayGenVars["gOutput"] = pDstTex;
 
@@ -94,7 +93,7 @@ void ReflectionPass::renderGui(Gui* pGui)
 	int dirty = 0;
 
 
-	dirty |= (int)pGui->addCheckBox("Reverse Roughness", mReverseRoughness);
+	dirty |= (int)pGui->addCheckBox("Is Open Scene", mIsOpenScene);
 
 	// If any of our UI parameters changed, let the pipeline know we're doing something different next frame
 	if (dirty) setRefreshFlag();

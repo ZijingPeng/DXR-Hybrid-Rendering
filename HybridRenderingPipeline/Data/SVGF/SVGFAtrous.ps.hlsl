@@ -72,19 +72,12 @@ float4 main(FullScreenPassVsOut vsOut) : SV_TARGET0
     const int2 ipos       = int2(vsOut.posH.xy);
     const int2 screenSize = getTextureDims(gAlbedo, 0);
 
-    const float epsVariance      = 1e-10;
     const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
 
     // constant samplers to prevent the compiler from generating code which
     // fetches the sampler descriptor from memory for each texture access
     const float4 illuminationCenter = gIllumination.Load(int3(ipos, 0));
     const float lIlluminationCenter = luminance(illuminationCenter.rgb);
-
-    // variance, filtered using 3x3 gaussin blur
-    const float var = computeVarianceCenter(ipos);
-
-    // number of temporally integrated pixels
-    const float historyLength = gHistoryLength[ipos].x;
 
     const float2 zCenter = gLinearZAndNormal[ipos].xy;
     if (zCenter.x < 0)
@@ -94,6 +87,9 @@ float4 main(FullScreenPassVsOut vsOut) : SV_TARGET0
     }
     const float3 nCenter = oct_to_ndir_snorm(gLinearZAndNormal[ipos].zw);
 
+    // variance, filtered using 3x3 gaussin blur
+    const float var = computeVarianceCenter(ipos);
+    const float epsVariance      = 1e-10;
     const float phiLIllumination   = gPhiColor * sqrt(max(0.0, epsVariance + var.r));
     const float phiDepth     = max(zCenter.y, 1e-8) * gStepSize;
 

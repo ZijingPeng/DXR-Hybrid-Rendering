@@ -145,18 +145,13 @@ float ggxSchlickMaskingTerm(float NdotL, float NdotV, float roughness)
 	return g_v * g_l;
 }
 
-float3 sampleBeckmannNormal(float2 Xi, float3 N, float roughness)
+float3 getGGXMicrofacet(float2 Xi, float3 N, float roughness)
 {
 	float a = roughness * roughness;
 
-	float logSample = log(1.0 - Xi.y);
-	float tan2Theta = -a * a * logSample;
-	float cosTheta = 1.0 / sqrt(1 + tan2Theta);
-	float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
-
 	float phi = 2.0 * PI * Xi.x;
-	//float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
-	//float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 
 	// from spherical coordinates to cartesian coordinates
 	float3 H;

@@ -1,9 +1,13 @@
 # DXR-Hybrid-Rendering
 
+![](/img/ours.png)
+
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
 
 - Shenyue Chen
+
 - Szeyu Chan
+
 - Zijing Peng
 
 ## Prerequisites

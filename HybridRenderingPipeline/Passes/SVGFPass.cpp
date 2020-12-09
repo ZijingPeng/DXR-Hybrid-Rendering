@@ -223,10 +223,10 @@ void SVGFPass::execute(RenderContext* pRenderContext)
   // mpPingPongFbo[0].  Takes mpCurReprojFbo as input.
   computeFilteredMoments(pRenderContext);
   
-  // Filter illumination from mpCurReprojFbo[0], storing the result
-  // in mpPingPongFbo[0].  Along the way (or at the end, depending on
-  // the value of mFeedbackTap), save the filtered illumination for
-  // next time into mpFilteredPastFbo.
+  // // Filter illumination from mpCurReprojFbo[0], storing the result
+  // // in mpPingPongFbo[0].  Along the way (or at the end, depending on
+  // // the value of mFeedbackTap), save the filtered illumination for
+  // // next time into mpFilteredPastFbo.
   computeAtrousDecomposition(pRenderContext, pAlbedoTexture);
 
 
@@ -235,6 +235,7 @@ void SVGFPass::execute(RenderContext* pRenderContext)
   shaderVars["gAlbedo"] = pAlbedoTexture;
   shaderVars["gEmission"] = pEmissionTexture;
   shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+  //shaderVars["gIllumination"] = mpCurReprojFbo->getColorTexture(0);
   mpGfxState->setFbo(mpFinalFbo);
   mpFinalModulate->execute(pRenderContext, mpGfxState);
 

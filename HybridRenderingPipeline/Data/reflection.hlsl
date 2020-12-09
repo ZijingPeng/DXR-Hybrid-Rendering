@@ -90,7 +90,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	getLightData(lightToSample, hit, L, lightIntensity, distToLight);
 	float NdotL = saturate(dot(N, L));
 	float shadowMult = float(gLightsCount) * shadowRayVisibility(hit, L, gMinT, distToLight);
-	shadowMult = max(shadowMult, 0.05);
+	shadowMult = max(shadowMult, 0.08);
 
 	// Compute half vectors and additional dot products for GGX
 	float3 H = normalize(V + L);
@@ -154,7 +154,7 @@ void ReflectRayGen()
 		float rnd1 = frac(haltonNext(hState) + nextRand(randSeed));
 		float rnd2 = frac(haltonNext(hState) + nextRand(randSeed));
 		float2 Xi = float2(rnd1, rnd2);
-		float3 H = ImportanceSampleGGX(Xi, N, roughness);
+		float3 H = sampleBeckmannNormal(Xi, N, roughness);
 		float3 L = normalize(2.0 * dot(V, H) * H - V);
 
 		RayDesc rayReflect;
@@ -165,7 +165,6 @@ void ReflectRayGen()
 		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-
 		// Grab our geometric normal.
 		float3 geoN = normalize(extraData.yzw);
 		if (dot(geoN, V) <= 0.0f) geoN = -geoN;
@@ -175,22 +174,8 @@ void ReflectRayGen()
 
 		// Compute some dot products needed for shading
 		float  NdotL = saturate(dot(N, L));
-		float  NdotH = saturate(dot(N, H));
-		float  LdotH = saturate(dot(L, H));
 
-		// Evaluate our BRDF using a microfacet BRDF model
-		float  D = ggxNormalDistribution(NdotH, roughness);          // The GGX normal distribution
-		float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);   // Use Schlick's masking term approx
-		float3 F = schlickFresnel(specular.xyz, LdotH);                  // Use Schlick's approx to Fresnel
-		float3 ggxTerm = D * G * F / (4 * NdotL * NdotV);        // The Cook-Torrance microfacet BRDF
-
-		// What's the probability of sampling vector H from getGGXMicrofacet()?
-		float  ggxProb = D * NdotH / (4 * LdotH);
-
-		float probDiffuse = probabilityToSampleDiffuse(diffuse.xyz, specular.xyz);
-		// Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
-		shadeColor = NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
-		//shadeColor = bounceColor * (1.0 - roughness);
+		shadeColor = NdotL * bounceColor;
 	}
 
 	bool colorsNan = any(isnan(shadeColor));

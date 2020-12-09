@@ -75,5 +75,5 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 
 	shadeColor = max(shadeColor, 0.05 * difMatlColor.xyz);
 
-	return float4(shadeColor / probDiffuse, 1.0f);
+	return float4(shadeColor, 1.0f);
 }

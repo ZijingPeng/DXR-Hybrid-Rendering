@@ -14348,10 +14348,6 @@
           1,
           1
         ],
-        "baseColorTexture": {
-          "index": 5,
-          "texCoord": 0
-        },
         "metallicFactor": 0,
         "roughnessFactor": 0.59999999999999998
       }
@@ -14390,10 +14386,6 @@
           1,
           1
         ],
-        "baseColorTexture": {
-          "index": 4,
-          "texCoord": 0
-        },
         "metallicFactor": 0,
         "roughnessFactor": 0.59999999999999998
       }
@@ -14433,10 +14425,6 @@
           1
         ],
         "metallicFactor": 1,
-        "metallicRoughnessTexture": {
-          "index": 3,
-          "texCoord": 0
-        },
         "roughnessFactor": 0.495617378
       }
     },
@@ -14493,10 +14481,6 @@
           1,
           1
         ],
-        "baseColorTexture": {
-          "index": 1,
-          "texCoord": 0
-        },
         "metallicFactor": 0,
         "roughnessFactor": 0.59999999999999998
       }
@@ -14535,10 +14519,6 @@
           1,
           1
         ],
-        "baseColorTexture": {
-          "index": 0,
-          "texCoord": 0
-        },
         "metallicFactor": 0,
         "roughnessFactor": 0.59999999999999998
       }
@@ -14630,10 +14610,6 @@
           1,
           1
         ],
-        "baseColorTexture": {
-          "index": 2,
-          "texCoord": 0
-        },
         "metallicFactor": 0,
         "roughnessFactor": 0.59999999999999998
       }

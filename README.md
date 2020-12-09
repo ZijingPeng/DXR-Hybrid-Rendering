@@ -14,7 +14,9 @@
 
 ## Credit
 
+- [GDC Talk: Shiny Pixels and Beyond: Real-Time Raytracing at SEED](https://www.gdcvault.com/play/1024801/-Real-time-Raytracing-for) 
+- [Hybrid Rendering for Real-Time Ray Tracing](https://link.springer.com/chapter/10.1007/978-1-4842-4427-2_25)
 - [Falcor](https://github.com/NVIDIAGameWorks/Falcor)
 - [Introduction To DirectX Raytracing](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html)
-- [GGX BRDF Sampling](https://learnopengl.com/PBR/IBL/Specular-IBL)
+- [Pica Pica Assets](https://github.com/SEED-EA/pica-pica-assets)
 

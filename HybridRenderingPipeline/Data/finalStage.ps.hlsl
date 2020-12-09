@@ -23,6 +23,7 @@
 Texture2D<float4>   gReflection; 
 Texture2D<float4>   gDirectLighting;
 Texture2D<float4>   gShadowAO;
+Texture2D<float4>   gEmissive;
 
 float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
@@ -30,11 +31,13 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
     float4 reflection = gReflection[pixelPos];
 	float4 directLighting = gDirectLighting[pixelPos];
 	float4 shadow = gShadowAO[pixelPos];
+	float4 emissive = gEmissive[pixelPos];
+	float ambient = 0.1;
 
 	float3 shadeColor;
 
 	// Todo: reflection
-	shadeColor = (directLighting * shadow).rgb + reflection.rgb;
+	shadeColor = (directLighting * (float4(ambient) + shadow)).rgb + reflection.rgb + emissive.rgb;
 	//shadeColor = (directLighting * ambientOcclusion * shadow * reflection).rgb;
 	//shadeColor = reflection.rgb;
 	return float4(shadeColor, 1.0f);

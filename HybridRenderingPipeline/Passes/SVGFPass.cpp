@@ -77,9 +77,6 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 	});
 	mpResManager->requestTextureResource(mOutputTexName);
 
-	// Set the default scene to load
-	//mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
-
 	// Create our graphics state and an accumulation shader
 	mpGfxState = GraphicsState::create();
 	

@@ -55,7 +55,7 @@ protected:
 	bool                    mDoIndirectGI = true;
 	bool                    mDoDirectGI = true;
 
-	int32_t                 mUserSpecifiedRayDepth = 3;   ///<  What is the current maximum ray depth
+	int32_t                 mUserSpecifiedRayDepth = 1;   ///<  What is the current maximum ray depth
 	const int32_t           mMaxPossibleRayDepth = 8;     ///<  The largest ray depth we support (without recompile)
 	bool                    mInverseRoughness = false;
 

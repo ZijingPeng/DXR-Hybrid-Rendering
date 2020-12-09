@@ -37,9 +37,6 @@ bool ShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::Shar
 	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
 	mpResManager->requestTextureResource(mAccumChannel);
 
-	// Set the default scene to load
-	mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
-
 	// Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
 	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);

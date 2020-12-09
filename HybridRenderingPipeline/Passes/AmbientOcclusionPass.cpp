@@ -44,6 +44,9 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
 	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
 	mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
 
+	//pResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
+	pResManager->setDefaultSceneName("Data/picapica/picapica.fscene");
+
 	// Now that we've passed all our shaders in, compile.  If we already have our scene, let it know what scene to use.
 	mpRays->compileRayProgram();
 	if (mpScene) mpRays->setScene(mpScene);

@@ -39,11 +39,8 @@ bool DirectLightingPass::initialize(RenderContext* pRenderContext, ResourceManag
 {
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
+	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough" });
 	mpResManager->requestTextureResource(mOutputTexName);
-
-	// Set the default scene to load
-	//mpResManager->setDefaultSceneName("Data/pink_room/pink_room.fscene");
 
 	// Create our graphics state and an accumulation shader
 	mpGfxState = GraphicsState::create();
@@ -97,6 +94,7 @@ void DirectLightingPass::execute(RenderContext* pRenderContext)
 	shaderVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	shaderVars["gNorm"] = mpResManager->getTexture("WorldNormal");
 	shaderVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
+	shaderVars["gSpecMatl"] = mpResManager->getTexture("MaterialSpecRough");
 
     // Execute the accumulation shader
     mpLambertShader->execute(pRenderContext, mpGfxState);

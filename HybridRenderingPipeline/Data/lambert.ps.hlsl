@@ -17,36 +17,21 @@
 **********************************************************************************************************************/
 // Some shared Falcor stuff for talking between CPU and GPU code
 #include "HostDeviceSharedMacros.h"
-#include "HostDeviceData.h"      
+#include "HostDeviceData.h"     
 
 // Include and import common Falcor utilities and data structures
-//import Raytracing;
-import Shading;                      // Shading functions, etc     
-import Lights;                       // Light structures for our current scene
+__import Raytracing;
+__import ShaderCommon;
+__import Shading;                      // Shading functions, etc
+__import Lights;                       // Light structures for our current scene
+
+// A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
+#include "commonUtils.hlsli"
 
 Texture2D<float4>   gPos;           // G-buffer world-space position
 Texture2D<float4>   gNorm;          // G-buffer world-space normal
 Texture2D<float4>   gDiffuseMatl;   // G-buffer diffuse material (RGB) and opacity (A)
-
-void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3 lightIntensity, out float distToLight)
-{
-	// Use built-in Falcor functions and data structures to fill in a LightSample data structure
-	//   -> See "Lights.slang" for it's definition
-	LightSample ls;
-
-	// Is it a directional light?
-	if (gLights[index].type == LightDirectional)
-		ls = evalDirectionalLight(gLights[index], hitPos);
-
-	// No?  Must be a point light.
-	else
-		ls = evalPointLight(gLights[index], hitPos);
-
-	// Convert the LightSample structure into simpler data
-	toLight = normalize(ls.L);
-	lightIntensity = ls.diffuse;
-	distToLight = length(ls.posW - hitPos);
-}
+Texture2D<float4>   gSpecMatl;
 
 float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
@@ -54,8 +39,12 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
     float4 worldPos = gPos[pixelPos];
     float4 worldNorm = gNorm[pixelPos];
     float4 difMatlColor = gDiffuseMatl[pixelPos];
+	float4 specMatlColor = gSpecMatl[pixelPos];
 
 	float3 shadeColor;
+	float ambient = 0.03;
+
+	float probDiffuse = probabilityToSampleDiffuse(difMatlColor.xyz, specMatlColor.xyz);
 
 	// Our camera sees the background if worldPos.w is 0, only do diffuse shading
 	if (worldPos.w != 0.0f)
@@ -80,11 +69,11 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 			// Accumulate our Lambertian shading color
 			shadeColor += LdotN * lightIntensity;
 		}
-
 		// Modulate based on the physically based Lambertian term (albedo/pi)
 		shadeColor *= difMatlColor.rgb / 3.141592f;
 	}
 
-	//return float4(1.0, 0.0, 0.0, 1.0f);
+	shadeColor = max(shadeColor, 0.05 * difMatlColor.xyz);
+
 	return float4(shadeColor, 1.0f);
 }

@@ -221,21 +221,21 @@ void SVGFPass::execute(RenderContext* pRenderContext)
   // Do a first cross-bilateral filtering of the illumination and
   // estimate its variance, storing the result into a float4 in
   // mpPingPongFbo[0].  Takes mpCurReprojFbo as input.
-  // computeFilteredMoments(pRenderContext);
+  computeFilteredMoments(pRenderContext);
   
   // // Filter illumination from mpCurReprojFbo[0], storing the result
   // // in mpPingPongFbo[0].  Along the way (or at the end, depending on
   // // the value of mFeedbackTap), save the filtered illumination for
   // // next time into mpFilteredPastFbo.
-  // computeAtrousDecomposition(pRenderContext, pAlbedoTexture);
+  computeAtrousDecomposition(pRenderContext, pAlbedoTexture);
 
 
 	// Compute albedo * filtered illumination and add emission back in.
   auto shaderVars = mpFinalModulate->getVars();
   shaderVars["gAlbedo"] = pAlbedoTexture;
   shaderVars["gEmission"] = pEmissionTexture;
-  // shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-  shaderVars["gIllumination"] = mpCurReprojFbo->getColorTexture(0);
+  shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+  //shaderVars["gIllumination"] = mpCurReprojFbo->getColorTexture(0);
   mpGfxState->setFbo(mpFinalFbo);
   mpFinalModulate->execute(pRenderContext, mpGfxState);
 

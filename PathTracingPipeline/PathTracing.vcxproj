@@ -48,6 +48,7 @@
     <None Include="Data\GlobalIlluminationUtils.hlsli" />
     <None Include="Data\halton.hlsli" />
     <None Include="Data\indirectRay.hlsli" />
+    <None Include="Data\microfacetBRDFUtils.hlsli" />
     <None Include="Data\standardShadowRay.hlsli" />
   </ItemGroup>
   <ItemGroup>

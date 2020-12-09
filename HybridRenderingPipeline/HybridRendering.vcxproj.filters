@@ -22,6 +22,9 @@
     <ClCompile Include="Passes\SVGFPass.cpp" />
     <ClCompile Include="Passes\SVGFShadowPass.cpp" />
     <ClCompile Include="Passes\MergePass.cpp" />
+    <ClCompile Include="..\PathTracingPipeline\Passes\GlobalIllumination.cpp" />
+    <ClCompile Include="..\CommonPasses\LightProbeGBufferPass.cpp" />
+    <ClCompile Include="..\CommonPasses\SimpleToneMappingPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CommonPasses\CopyToOutputPass.h" />
@@ -44,6 +47,9 @@
     <ClInclude Include="Passes\SVGFPass.h" />
     <ClInclude Include="Passes\SVGFShadowPass.h" />
     <ClInclude Include="Passes\MergePass.h" />
+    <ClInclude Include="..\PathTracingPipeline\Passes\GlobalIllumination.h" />
+    <ClInclude Include="..\CommonPasses\LightProbeGBufferPass.h" />
+    <ClInclude Include="..\CommonPasses\SimpleToneMappingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\SVGF\SVGFAtrous.ps.hlsl">
@@ -118,6 +124,9 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Data\merge.ps.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Data\rtShadowRay.hlsli">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

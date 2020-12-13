@@ -37,4 +37,5 @@ protected:
     uint32_t                                mMinTSelector = 1;      ///< Allow user to select which minT value to use for rays
     uint32_t                                mFrameCount = 0;
     bool                                    mIsOpenScene = true;
+    bool                                    mHalfResolution = false;
 };

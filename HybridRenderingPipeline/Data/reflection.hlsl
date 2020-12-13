@@ -34,6 +34,7 @@ struct ReflectRayPayload
 	float4 reflectColor;
 	uint rndSeed;
 	bool isOpenScene;
+	float3 hitPoint;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -42,6 +43,7 @@ cbuffer RayGenCB
 	uint  gFrameCount;
 	float gMinT;
 	bool gOpenScene;
+	bool gHalfResolution;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -82,6 +84,7 @@ void ReflectClosestHit(inout ReflectRayPayload rayData, BuiltInTriangleIntersect
 	float3 spec = shadeData.specular;
 	float rough = shadeData.roughness;
 
+	rayData.hitPoint = hit;
 	int lightToSample = min(int(nextRand(rayData.rndSeed) * gLightsCount), gLightsCount - 1);
 	// Query the scene to find info about the randomly selected light
 	float distToLight;
@@ -103,9 +106,18 @@ void ReflectRayGen()
 	// Where is this ray on screen?
 	uint2 launchIndex = DispatchRaysIndex().xy;
 	uint2 launchDim = DispatchRaysDimensions().xy;
-
 	// Initialize random seed per sample based on a screen position and temporally varying count
 	uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
+
+	uint2 launchIndexCopy;
+	
+	if (!gHalfResolution) {
+		launchIndexCopy = launchIndex;
+	}
+	else {
+		launchIndexCopy = launchIndex * 2;
+		launchIndex = launchIndex * 2 + uint2(int(randSeed) & 1, int(nextRand(randSeed)) & 1);
+	}
 
 	// Load the position and normal from our g-buffer
 	float4 worldPos = gPos[launchIndex];
@@ -124,6 +136,7 @@ void ReflectRayGen()
 
 	bool isGeometryValid = (worldPos.w != 0.0f);
 	float3 shadeColor;
+	float3 bounceColor;
 	if (isGeometryValid)
 	{
 		HaltonState hState;
@@ -140,18 +153,41 @@ void ReflectRayGen()
 		rayReflect.Direction = L;
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
-		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed, gOpenScene };
+		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed, gOpenScene, float3(0)};
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
-		float3 bounceColor = rayPayload.reflectColor.xyz;
+		bounceColor = rayPayload.reflectColor.xyz;
 
-		// Compute some dot products needed for shading
-		float  NdotL = saturate(dot(N, L));
+		bool colorsNan = any(isnan(bounceColor));
+		if (colorsNan) {
+			gOutput[launchIndexCopy] = float4(bounceColor, 1);
+			if (gHalfResolution) {
+				gOutput[launchIndexCopy + uint2(0, 1)] = float4(bounceColor, 1);
+				gOutput[launchIndexCopy + uint2(1, 0)] = float4(bounceColor, 1);
+				gOutput[launchIndexCopy + uint2(1, 1)] = float4(bounceColor, 1);
+			}
+		}
+		else {
+			// Compute some dot products needed for shading
+			float NdotL = saturate(dot(N, L));
 
-		shadeColor = NdotL * bounceColor;
+			gOutput[launchIndexCopy] = float4(NdotL * bounceColor, 1);
+
+			if (gHalfResolution) {
+				float3 hitPoint = rayPayload.hitPoint;
+				gOutput[launchIndexCopy + uint2(0, 1)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(0, 1)].xyz)), 1);
+				gOutput[launchIndexCopy + uint2(1, 0)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 0)].xyz)), 1);
+				gOutput[launchIndexCopy + uint2(1, 1)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 1)].xyz)), 1);
+			}
+		}
+	}
+	else {
+		gOutput[launchIndexCopy] = float4(0, 0, 0, 1.0f);
+		if (gHalfResolution) {
+			gOutput[launchIndexCopy + uint2(0, 1)] = float4(0, 0, 0, 1.0f);
+			gOutput[launchIndexCopy + uint2(1, 0)] = float4(0, 0, 0, 1.0f);
+			gOutput[launchIndexCopy + uint2(1, 1)] = float4(0, 0, 0, 1.0f);
+		}
 	}
 
-	bool colorsNan = any(isnan(shadeColor));
-	// Store out the color of this shaded pixel
-	gOutput[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
 }

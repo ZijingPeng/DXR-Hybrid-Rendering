@@ -34,7 +34,7 @@ Shadows are implemented by launching rays towards the light source. To create so
 
 To filter the shadows, we applied a SVGF-based filter. 
 
-| Raytraced Shadow (1 spp) | Raytraced Shadow with Filter (1 ssp) |
+| Raytraced Shadow (1 spp) | Raytraced Shadow with Filter (1 spp) |
 | ------------------------ | ------------------------------------ |
 | ![](/img/shadow.png)     | ![](/img/shadow_svgf.png)            |
 
@@ -42,7 +42,7 @@ To filter the shadows, we applied a SVGF-based filter.
 
 We did not implement global illumination in this project, ambient occlusion is used to add realism to our renders. We also used the SVGF-based filter for denoising AO results.
 
-| Ambient Occlusion (1 ssp) | Ambient Occlusion with filter (1 spp) |
+| Ambient Occlusion (1 spp) | Ambient Occlusion with filter (1 spp) |
 | ------------------------- | ------------------------------------- |
 | ![](/img/ao.png)          | ![](/img/ao_svgf.png)                 |
 
@@ -52,9 +52,9 @@ To create a nice visual effect of reflection, we first sampled the normal distri
 
 Another SVGF-based filter is applied for denoising the result.
 
-| Reflection (1 ssp)       | Reflection with filter (1 spp) |
+| Reflection (1 spp)       | Reflection with filter (1 spp) |
 | ------------------------ | ------------------------------ |
-| ![](/img/reflection.png) | ![](/img/reflection.png)       |
+| ![](/img/reflection.png) | ![](/img/reflection_svgf.png)  |
 
 ## Performance Analysis
 

@@ -35,9 +35,9 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 	mpResManager->requestTextureResource("MaterialDiffuse");
 	mpResManager->requestTextureResource("MaterialSpecRough");
 	mpResManager->requestTextureResource("MaterialEmissive");
-  mpResManager->requestTextureResource("PosNormalFWidth", ResourceFormat::RG32Float);
-  mpResManager->requestTextureResource("LinearZAndDeriv", ResourceFormat::RG32Float);
-  mpResManager->requestTextureResource("MotiveVectors", ResourceFormat::RG32Float);
+  mpResManager->requestTextureResource("PosNormalFWidth", ResourceFormat::RG32Float); // float2
+  mpResManager->requestTextureResource("linearZAndNormal");
+  mpResManager->requestTextureResource("MotiveVectors", ResourceFormat::RG32Float); // float2
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
   // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
@@ -68,7 +68,7 @@ void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 	mpInternalFbo = mpResManager->createManagedFbo(
 		{
 			"WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough",
-			"MaterialEmissive", "PosNormalFWidth", "LinearZAndDeriv", "MotiveVectors"
+			"MaterialEmissive", "PosNormalFWidth", "linearZAndNormal", "MotiveVectors"
 		}, // Names of color buffers
 		"Z-Buffer"
 	);

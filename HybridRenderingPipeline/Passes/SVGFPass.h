@@ -38,7 +38,6 @@ protected:
 	Scene::SharedPtr              mpScene;
 
 	// SVGF shaders
-	FullscreenLaunch::SharedPtr   mpPackLinearZAndNormal;
 	FullscreenLaunch::SharedPtr   mpReprojection;
 	FullscreenLaunch::SharedPtr   mpAtrous;
 	FullscreenLaunch::SharedPtr   mpFilterMoments;
@@ -46,7 +45,6 @@ protected:
 
   // Intermediate framebuffers
   Fbo::SharedPtr mpPingPongFbo[2];
-  Fbo::SharedPtr mpLinearZAndNormalFbo;
   Fbo::SharedPtr mpFilteredPastFbo;
   Fbo::SharedPtr mpCurReprojFbo;
   Fbo::SharedPtr mpPrevReprojFbo;
@@ -64,14 +62,13 @@ protected:
   float   mMomentsAlpha        = 0.2f;
 
 private:
-  void computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
-                                 Texture::SharedPtr pWorldNormalTexture);
   void allocateFbos(glm::uvec2 dim);
   void computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
                             Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
                             Texture::SharedPtr pMotionVectorTexture,
                             Texture::SharedPtr pPositionNormalFwidthTexture,
+                            Texture::SharedPtr pCurLinearZTexture,
                             Texture::SharedPtr pPrevLinearZAndNormalTexture);
-  void computeFilteredMoments(RenderContext* pRenderContext);
-  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture);
+  void computeFilteredMoments(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture);
+  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture, Texture::SharedPtr pCurLinearZTexture);
 };

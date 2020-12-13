@@ -38,7 +38,6 @@ protected:
 	Scene::SharedPtr              mpScene;
 
 	// SVGF shaders
-	FullscreenLaunch::SharedPtr   mpPackLinearZAndNormal;
 	FullscreenLaunch::SharedPtr   mpReprojection;
 	FullscreenLaunch::SharedPtr   mpAtrous;
 	FullscreenLaunch::SharedPtr   mpFilterMoments;
@@ -71,7 +70,8 @@ private:
                             Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
                             Texture::SharedPtr pMotionVectorTexture,
                             Texture::SharedPtr pPositionNormalFwidthTexture,
+                            Texture::SharedPtr pCurLinearZTexture,
                             Texture::SharedPtr pPrevLinearZAndNormalTexture);
-  void computeFilteredMoments(RenderContext* pRenderContext);
-  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture);
+  void computeFilteredMoments(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture);
+  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture, Texture::SharedPtr pCurLinearZTexture);
 };

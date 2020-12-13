@@ -19,6 +19,7 @@
 // Falcor / Slang imports to include shared code and data structures
 __import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
 __import DefaultVS;         // VertexOut declaration
+import MathHelpers;
 
 struct GBuffer
 {
@@ -28,7 +29,7 @@ struct GBuffer
 	float4 matSpec  : SV_Target3;
   float4 matEmissive : SV_Target4;
   float2 posNormalFwidth : SV_Target5;
-  float2 linearZAndDeriv : SV_Target6;
+  float4 linearZAndNormal : SV_Target6;
   float2 motionVec : SV_Target7;
 };
 
@@ -61,7 +62,9 @@ GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Posi
   float3 albedo = hitPt.diffuse;
   float2 posNormalFwidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
   const float linearZ = vsOut.posH.z * vsOut.posH.w;
-  gBufOut.linearZAndDeriv = float2(linearZ, max(abs(ddx(linearZ)), abs(ddy(linearZ)))); 
+  // Pack normal into the last component of linear z
+  const float2 nPacked = ndir_to_oct_snorm(hitPt.N);
+  gBufOut.linearZAndNormal = float4(linearZ, max(abs(ddx(linearZ)), abs(ddy(linearZ))), nPacked.x, nPacked.y); 
 
   int2 ipos = int2(vsOut.posH.xy);
   const float2 pixelPos = ipos + float2(0.5, 0.5); // Current sample in pixel coords.

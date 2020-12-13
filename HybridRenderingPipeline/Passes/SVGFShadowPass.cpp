@@ -34,7 +34,7 @@ namespace {
 	const char kInputBufferWorldPosition[] = "WorldPosition";
 	const char kInputBufferWorldNormal[] = "WorldNormal";
 	const char kInputBufferPosNormalFwidth[] = "PosNormalFWidth";
-	const char kInputBufferLinearZ[] = "LinearZAndDeriv";
+	const char kInputBufferLinearZAndNormal[] = "linearZAndNormal";
 	const char kInputBufferMotionVector[] = "MotiveVectors";
 
 	// Internal buffer names
@@ -66,7 +66,7 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 		kInputBufferWorldPosition,
 		kInputBufferWorldNormal,
 		kInputBufferPosNormalFwidth,
-		kInputBufferLinearZ,
+		kInputBufferLinearZAndNormal,
 		kInputBufferMotionVector
 	});
 
@@ -80,7 +80,6 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 	// Create our graphics state and an accumulation shader
 	mpGfxState = GraphicsState::create();
 	
-	mpPackLinearZAndNormal = FullscreenLaunch::create(kPackLinearZAndNormalShader);
 	mpReprojection = FullscreenLaunch::create(kReprojectShader);
 	mpAtrous = FullscreenLaunch::create(kAtrousShader);
 	mpFilterMoments = FullscreenLaunch::create(kFilterMomentShader);
@@ -98,15 +97,8 @@ void SVGFShadowPass::allocateFbos(glm::uvec2 dim)
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
     desc.setColorTarget(1, Falcor::ResourceFormat::RG32Float);   // moments
     desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
-	mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
+	  mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpPrevReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
-  }
-
-  {
-    // Screen-size RGBA32F buffer for linear Z, derivative, and packed normal
-    Fbo::Desc desc;
-    desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float);
-    mpLinearZAndNormalFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   {
@@ -142,7 +134,6 @@ void SVGFShadowPass::resize(uint32_t width, uint32_t height)
 void SVGFShadowPass::clearBuffers(RenderContext* pRenderContext) {
   pRenderContext->clearFbo(mpPingPongFbo[0].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpPingPongFbo[1].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
-  pRenderContext->clearFbo(mpLinearZAndNormalFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpFilteredPastFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpCurReprojFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
   pRenderContext->clearFbo(mpPrevReprojFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
@@ -187,7 +178,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
 	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
 	Texture::SharedPtr pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
-	Texture::SharedPtr pLinearZTexture = mpResManager->getTexture(kInputBufferLinearZ);
+	Texture::SharedPtr pLinearZAndNormalTexture = mpResManager->getTexture(kInputBufferLinearZAndNormal);
 	Texture::SharedPtr pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
 	Texture::SharedPtr pOutputTexture = mpResManager->getTexture(mOutputTexName);
 
@@ -203,9 +194,6 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 		pRenderContext->blit(pColorTexture->getSRV(), pOutputTexture->getRTV());
 		return;
 	}
-  // Grab linear z and its derivative and also pack the normal into
-  // the last two channels of the mpLinearZAndNormalFbo.
-  computeLinearZAndNormal(pRenderContext, pLinearZTexture, pWorldNormalTexture);
   
   // Demodulate input color & albedo to get illumination and lerp in
   // reprojected filtered illumination from the previous frame.
@@ -213,28 +201,19 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
   // per-pixel history length in mpCurReprojFbo.
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
   computeReprojection(pRenderContext, pAlbedoTexture, pColorTexture, pEmissionTexture,
-                            pMotionVectorTexture, pPosNormalFwidthTexture,
+                            pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
                             pPrevLinearZAndNormalTexture);
   
   // Do a first cross-bilateral filtering of the illumination and
   // estimate its variance, storing the result into a float4 in
   // mpPingPongFbo[0].  Takes mpCurReprojFbo as input.
-  computeFilteredMoments(pRenderContext);
+  computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
   
   // Filter illumination from mpCurReprojFbo[0], storing the result
   // in mpPingPongFbo[0].  Along the way (or at the end, depending on
   // the value of mFeedbackTap), save the filtered illumination for
   // next time into mpFilteredPastFbo.
-  computeAtrousDecomposition(pRenderContext, pAlbedoTexture);
-
-
-	// Compute albedo * filtered illumination and add emission back in.
-  //auto shaderVars = mpFinalModulate->getVars();
-  //// shaderVars["gAlbedo"] = pAlbedoTexture;
-  //shaderVars["gEmission"] = pEmissionTexture;
-  //shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-  //mpGfxState->setFbo(mpFinalFbo);
-  //mpFinalModulate->execute(pRenderContext, mpGfxState);
+  computeAtrousDecomposition(pRenderContext, pAlbedoTexture, pLinearZAndNormalTexture);
 
   // Blit into the output texture.
   pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
@@ -245,20 +224,11 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
                         pPrevLinearZAndNormalTexture->getRTV());
 }
 
-void SVGFShadowPass::computeLinearZAndNormal(RenderContext* pRenderContext, Texture::SharedPtr pLinearZTexture,
-                                       Texture::SharedPtr pWorldNormalTexture)
-{
-  auto shaderVars = mpPackLinearZAndNormal->getVars();
-  shaderVars["gLinearZ"] = pLinearZTexture;
-  shaderVars["gNormal"] = pWorldNormalTexture;
-  mpGfxState->setFbo(mpLinearZAndNormalFbo);
-  mpPackLinearZAndNormal->execute(pRenderContext, mpGfxState);
-}
-
 void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
                                    Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
                                    Texture::SharedPtr pMotionVectorTexture,
                                    Texture::SharedPtr pPositionNormalFwidthTexture,
+                                   Texture::SharedPtr pCurLinearZTexture,
                                    Texture::SharedPtr pPrevLinearZTexture)
 {
   auto shaderVars = mpReprojection->getVars();
@@ -271,7 +241,7 @@ void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture:
   shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
-  shaderVars["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gLinearZAndNormal"]       = pCurLinearZTexture;
   shaderVars["gPrevLinearZAndNormal"]   = pPrevLinearZTexture;
   shaderVars["gPrevHistoryLength"] = mpPrevReprojFbo->getColorTexture(2);
 
@@ -283,14 +253,14 @@ void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture:
   mpReprojection->execute(pRenderContext, mpGfxState);
 }
 
-void SVGFShadowPass::computeFilteredMoments(RenderContext* pRenderContext)
+void SVGFShadowPass::computeFilteredMoments(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture)
 {
   auto shaderVars = mpFilterMoments->getVars();
 
   shaderVars["gIllumination"]     = mpCurReprojFbo->getColorTexture(0);
   shaderVars["gMoments"]          = mpCurReprojFbo->getColorTexture(1);
   shaderVars["gHistoryLength"]    = mpCurReprojFbo->getColorTexture(2);
-  shaderVars["gLinearZAndNormal"]          = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gLinearZAndNormal"]          = pCurLinearZTexture;
 
   shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
   shaderVars["PerImageCB"]["gPhiNormal"]  = mPhiNormal;
@@ -300,12 +270,12 @@ void SVGFShadowPass::computeFilteredMoments(RenderContext* pRenderContext)
 }
 
 
-void SVGFShadowPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture)
+void SVGFShadowPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture, Texture::SharedPtr pCurLinearZTexture)
 {
   auto shaderVars = mpAtrous->getVars();
   // shaderVars["gAlbedo"]        = pAlbedoTexture;
   shaderVars["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
-  shaderVars["gLinearZAndNormal"]       = mpLinearZAndNormalFbo->getColorTexture(0);
+  shaderVars["gLinearZAndNormal"] = pCurLinearZTexture;
   shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
   shaderVars["PerImageCB"]["gPhiNormal"] = mPhiNormal;
 

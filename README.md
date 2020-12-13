@@ -42,9 +42,11 @@ To filter the shadows, we applied a SVGF-based filter.
 
 We did not implement global illumination in this project, ambient occlusion is used to add realism to our renders. We also used the SVGF-based filter for denoising AO results.
 
-| Ambient Occlusion (1 spp) | Ambient Occlusion with filter (1 spp) |
-| ------------------------- | ------------------------------------- |
-| ![](/img/ao.png)          | ![](/img/ao_svgf.png)                 |
+| AO (1 spp)       | AO with filter (1 spp) |
+| ---------------- | ---------------------- |
+| ![](/img/ao.png) | ![](/img/ao_svgf.png)  |
+
+To improve the performance, we merge the shadow buffer and the AO buffer and add the filter.
 
 ### Reflection
 
@@ -52,13 +54,21 @@ To create a nice visual effect of reflection, we first sampled the normal distri
 
 Another SVGF-based filter is applied for denoising the result.
 
-| Reflection (1 spp)       | Reflection with filter (1 spp) |
-| ------------------------ | ------------------------------ |
-| ![](/img/reflection.png) | ![](/img/reflection_svgf.png)  |
+We also tried to improve the performance by launching a quarter ray per pixel. In our test scene, when the camera is static, the filtered results of 1 spp reflection and 1/4 spp reflection are similar. When the camera is moving fast, the filtered result of quarter resolution reflection is more noisy than the other. However, after applying the quarter resolution reflection, our improvement hugely improved. We'll discuss the improvement at the next section.
+
+| Reflection (1/4 spp)      | Reflection with filter (1/4 spp)   |
+| ------------------------- | ---------------------------------- |
+| ![](/img/reflection0.png) | ![](/img/reflection1.png)          |
+| **Reflection (1 spp)**    | **Reflection with filter (1 spp)** |
+| ![](/img/reflection3.png) | ![](/img/reflection2.png)          |
 
 ## Performance Analysis
 
 ## Results
+
+![](/img/classroom.png)
+
+![](/img/livingroom.png)
 
 ## Credit
 

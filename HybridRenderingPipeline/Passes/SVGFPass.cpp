@@ -83,7 +83,6 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 	mpReprojection = FullscreenLaunch::create(kReprojectShader);
 	mpAtrous = FullscreenLaunch::create(kAtrousShader);
 	mpFilterMoments = FullscreenLaunch::create(kFilterMomentShader);
-	mpFinalModulate = FullscreenLaunch::create(kFinalModulateShader);
 	return true;
 }
 
@@ -109,19 +108,9 @@ void SVGFPass::allocateFbos(glm::uvec2 dim)
     mpPingPongFbo[1]  = FboHelper::create2D(dim.x, dim.y, desc);
     mpFilteredPastFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpFilteredIlluminationFbo       = FboHelper::create2D(dim.x, dim.y, desc);
-    mpFinalFbo        = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   mBuffersNeedClear = true;
-}
-
-void SVGFPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
-{
-
-	// // When our renderer moves around we want to reset accumulation, so stash the scene pointer
-	// mpScene = std::dynamic_pointer_cast<RtScene>(pScene);
-	// if (!mpScene) return;
-	// mpLambertShader->setLights(mpScene->getLights());
 }
 
 void SVGFPass::resize(uint32_t width, uint32_t height)
@@ -197,33 +186,19 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 		return;
 	}
   
-  // Demodulate input color & albedo to get illumination and lerp in
-  // reprojected filtered illumination from the previous frame.
-  // Stores the result as well as initial moments and an updated
-  // per-pixel history length in mpCurReprojFbo.
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
   computeReprojection(pRenderContext, pAlbedoTexture, pColorTexture, pEmissionTexture,
                             pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
                             pPrevLinearZAndNormalTexture);
   
-  // Do a first cross-bilateral filtering of the illumination and
-  // estimate its variance, storing the result into a float4 in
-  // mpPingPongFbo[0].  Takes mpCurReprojFbo as input.
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
-  
-  // // Filter illumination from mpCurReprojFbo[0], storing the result
-  // // in mpPingPongFbo[0].  Along the way (or at the end, depending on
-  // // the value of mFeedbackTap), save the filtered illumination for
-  // // next time into mpFilteredPastFbo.
+
   computeAtrousDecomposition(pRenderContext, pAlbedoTexture, pLinearZAndNormalTexture);
 
-  // Blit into the output texture.
   pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
 
-  // Swap resources so we're ready for next frame.
   std::swap(mpCurReprojFbo, mpPrevReprojFbo);
-  pRenderContext->blit(pLinearZAndNormalTexture->getSRV(),
-                        pPrevLinearZAndNormalTexture->getRTV());
+  pRenderContext->blit(pLinearZAndNormalTexture->getSRV(), pPrevLinearZAndNormalTexture->getRTV());
 }
 
 void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
@@ -235,7 +210,6 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
 {
   auto shaderVars = mpReprojection->getVars();
 
-  // Setup textures for our reprojection shader pass
   shaderVars["gMotion"]        = pMotionVectorTexture;
   shaderVars["gColor"]         = pColorTexture;
   shaderVars["gEmission"]      = pEmissionTexture;
@@ -247,7 +221,6 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
   shaderVars["gPrevLinearZAndNormal"]   = pPrevLinearZTexture;
   shaderVars["gPrevHistoryLength"] = mpPrevReprojFbo->getColorTexture(2);
 
-  // Setup variables for our reprojection pass
   shaderVars["PerImageCB"]["gAlpha"] = mAlpha;
   shaderVars["PerImageCB"]["gMomentsAlpha"] = mMomentsAlpha;
 

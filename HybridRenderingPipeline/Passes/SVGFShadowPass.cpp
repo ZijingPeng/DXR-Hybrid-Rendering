@@ -22,11 +22,9 @@
 
 namespace {
 	// Where is our shader located?
-	const char kPackLinearZAndNormalShader[] = "SVGFPackLinearZAndNormal.ps.hlsl";
 	const char kReprojectShader[] = "SVGFShadow\\SVGFReproject.ps.hlsl";
 	const char kAtrousShader[] = "SVGFShadow\\SVGFAtrous.ps.hlsl";
 	const char kFilterMomentShader[] = "SVGFShadow\\SVGFFilterMoments.ps.hlsl";
-	const char kFinalModulateShader[] = "SVGFShadow\\SVGFFinalModulate.ps.hlsl";
 
 	// Input buffers
 	const char kInputBufferAlbedo[] = "MaterialDiffuse";
@@ -83,15 +81,12 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 	mpReprojection = FullscreenLaunch::create(kReprojectShader);
 	mpAtrous = FullscreenLaunch::create(kAtrousShader);
 	mpFilterMoments = FullscreenLaunch::create(kFilterMomentShader);
-	mpFinalModulate = FullscreenLaunch::create(kFinalModulateShader);
 	return true;
 }
 
 void SVGFShadowPass::allocateFbos(glm::uvec2 dim)
 {
   {
-    // Screen-size FBOs with 3 MRTs: one that is RGBA32F, one that is
-    // RG32F for the luminance moments, and one that is R16F.
     Fbo::Desc desc;
     desc.setSampleCount(0);
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
@@ -102,26 +97,15 @@ void SVGFShadowPass::allocateFbos(glm::uvec2 dim)
   }
 
   {
-    // Screen-size FBOs with 1 RGBA32F buffer
     Fbo::Desc desc;
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float);
     mpPingPongFbo[0]  = FboHelper::create2D(dim.x, dim.y, desc);
     mpPingPongFbo[1]  = FboHelper::create2D(dim.x, dim.y, desc);
     mpFilteredPastFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpFilteredIlluminationFbo       = FboHelper::create2D(dim.x, dim.y, desc);
-    mpFinalFbo        = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
   mBuffersNeedClear = true;
-}
-
-void SVGFShadowPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
-{
-
-	// // When our renderer moves around we want to reset accumulation, so stash the scene pointer
-	// mpScene = std::dynamic_pointer_cast<RtScene>(pScene);
-	// if (!mpScene) return;
-	// mpLambertShader->setLights(mpScene->getLights());
 }
 
 void SVGFShadowPass::resize(uint32_t width, uint32_t height)
@@ -195,33 +179,19 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 		return;
 	}
   
-  // Demodulate input color & albedo to get illumination and lerp in
-  // reprojected filtered illumination from the previous frame.
-  // Stores the result as well as initial moments and an updated
-  // per-pixel history length in mpCurReprojFbo.
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
   computeReprojection(pRenderContext, pAlbedoTexture, pColorTexture, pEmissionTexture,
                             pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
                             pPrevLinearZAndNormalTexture);
   
-  // Do a first cross-bilateral filtering of the illumination and
-  // estimate its variance, storing the result into a float4 in
-  // mpPingPongFbo[0].  Takes mpCurReprojFbo as input.
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
-  
-  // Filter illumination from mpCurReprojFbo[0], storing the result
-  // in mpPingPongFbo[0].  Along the way (or at the end, depending on
-  // the value of mFeedbackTap), save the filtered illumination for
-  // next time into mpFilteredPastFbo.
+
   computeAtrousDecomposition(pRenderContext, pAlbedoTexture, pLinearZAndNormalTexture);
 
-  // Blit into the output texture.
   pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
 
-  // Swap resources so we're ready for next frame.
   std::swap(mpCurReprojFbo, mpPrevReprojFbo);
-  pRenderContext->blit(pLinearZAndNormalTexture->getSRV(),
-                        pPrevLinearZAndNormalTexture->getRTV());
+  pRenderContext->blit(pLinearZAndNormalTexture->getSRV(), pPrevLinearZAndNormalTexture->getRTV());
 }
 
 void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
@@ -233,11 +203,9 @@ void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext, Texture:
 {
   auto shaderVars = mpReprojection->getVars();
 
-  // Setup textures for our reprojection shader pass
   shaderVars["gMotion"]        = pMotionVectorTexture;
   shaderVars["gColor"]         = pColorTexture;
   shaderVars["gEmission"]      = pEmissionTexture;
-  // shaderVars["gAlbedo"]        = pAlbedoTexture;
   shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);

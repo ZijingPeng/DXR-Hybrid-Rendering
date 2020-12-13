@@ -17,7 +17,6 @@ protected:
 
 	// Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 	void execute(RenderContext* pRenderContext) override;
 	void renderGui(Gui* pGui) override;
 	void resize(uint32_t width, uint32_t height) override;
@@ -30,9 +29,7 @@ protected:
   std::string                   mInputTexName;
 
 	// State for our shader
-	FullscreenLaunch::SharedPtr   mpLambertShader;
 	GraphicsState::SharedPtr      mpGfxState;
-	Fbo::SharedPtr                mpInternalFbo;
 
 	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
 	Scene::SharedPtr              mpScene;
@@ -41,7 +38,6 @@ protected:
 	FullscreenLaunch::SharedPtr   mpReprojection;
 	FullscreenLaunch::SharedPtr   mpAtrous;
 	FullscreenLaunch::SharedPtr   mpFilterMoments;
-	FullscreenLaunch::SharedPtr   mpFinalModulate;
 
   // Intermediate framebuffers
   Fbo::SharedPtr mpPingPongFbo[2];
@@ -49,7 +45,6 @@ protected:
   Fbo::SharedPtr mpCurReprojFbo;
   Fbo::SharedPtr mpPrevReprojFbo;
   Fbo::SharedPtr mpFilteredIlluminationFbo;
-  Fbo::SharedPtr mpFinalFbo;
 
 	bool    mBuffersNeedClear    = false;
   bool    mFilterEnabled       = true;

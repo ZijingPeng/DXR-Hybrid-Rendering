@@ -39,8 +39,6 @@ bool isNaN(float f)
 Texture2D   gMotion;
 Texture2D   gPositionNormalFwidth;
 Texture2D   gColor;
-// Texture2D   gAlbedo;
-Texture2D   gEmission;
 Texture2D   gPrevIllum;
 Texture2D   gPrevMoments;
 Texture2D   gLinearZAndNormal;

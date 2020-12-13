@@ -29,8 +29,6 @@ namespace {
 	const char kFinalModulateShader[] = "SVGF\\SVGFFinalModulate.ps.hlsl";
 
 	// Input buffers
-	const char kInputBufferAlbedo[] = "MaterialDiffuse";
-	const char kInputBufferEmission[] = "MaterialEmissive";
 	const char kInputBufferWorldPosition[] = "WorldPosition";
 	const char kInputBufferWorldNormal[] = "WorldNormal";
 	const char kInputBufferPosNormalFwidth[] = "PosNormalFWidth";
@@ -52,7 +50,7 @@ SVGFPass::SharedPtr SVGFPass::create(const std::string& bufferOut, const std::st
 SVGFPass::SVGFPass(const std::string& bufferOut, const std::string &inputColorBuffer)
 	: ::RenderPass("SVGF Pass", "SVGF Options")
 {
-	mOutputTexName = bufferOut;
+	  mOutputTexName = bufferOut;
     mInputTexName = inputColorBuffer;
 }
 
@@ -61,8 +59,6 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
 	// Stash our resource manager; ask for the texture the developer asked us to write
 	mpResManager = pResManager;
 	mpResManager->requestTextureResources({
-		kInputBufferAlbedo,
-		kInputBufferEmission,
 		kInputBufferWorldPosition,
 		kInputBufferWorldNormal,
 		kInputBufferPosNormalFwidth,
@@ -162,9 +158,6 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 {
 	// Grab the texture to write to
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
-
-	Texture::SharedPtr pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
-	Texture::SharedPtr pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
 	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
 	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
 	Texture::SharedPtr pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
@@ -187,8 +180,7 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 	}
   
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
-  computeReprojection(pRenderContext, pAlbedoTexture, pColorTexture, pEmissionTexture,
-                            pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
+  computeReprojection(pRenderContext, pColorTexture, pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
                             pPrevLinearZAndNormalTexture);
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
@@ -201,8 +193,8 @@ void SVGFPass::execute(RenderContext* pRenderContext)
   pRenderContext->blit(pLinearZAndNormalTexture->getSRV(), pPrevLinearZAndNormalTexture->getRTV());
 }
 
-void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
-                                   Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
+void SVGFPass::computeReprojection(RenderContext* pRenderContext,
+                                   Texture::SharedPtr pColorTexture,
                                    Texture::SharedPtr pMotionVectorTexture,
                                    Texture::SharedPtr pPositionNormalFwidthTexture,
                                    Texture::SharedPtr pCurLinearZTexture,
@@ -212,8 +204,6 @@ void SVGFPass::computeReprojection(RenderContext* pRenderContext, Texture::Share
 
   shaderVars["gMotion"]        = pMotionVectorTexture;
   shaderVars["gColor"]         = pColorTexture;
-  shaderVars["gEmission"]      = pEmissionTexture;
-  shaderVars["gAlbedo"]        = pAlbedoTexture;
   shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
@@ -245,10 +235,9 @@ void SVGFPass::computeFilteredMoments(RenderContext* pRenderContext, Texture::Sh
 }
 
 
-void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture, Texture::SharedPtr pCurLinearZTexture)
+void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture)
 {
   auto shaderVars = mpAtrous->getVars();
-  shaderVars["gAlbedo"] = pAlbedoTexture;
   shaderVars["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
   shaderVars["gLinearZAndNormal"] = pCurLinearZTexture;
   shaderVars["PerImageCB"]["gPhiColor"]  = mPhiColor;

@@ -59,12 +59,11 @@ protected:
 
 private:
   void allocateFbos(glm::uvec2 dim);
-  void computeReprojection(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture,
-                            Texture::SharedPtr pColorTexture, Texture::SharedPtr pEmissionTexture,
+  void computeReprojection(RenderContext* pRenderContext,
                             Texture::SharedPtr pMotionVectorTexture,
                             Texture::SharedPtr pPositionNormalFwidthTexture,
                             Texture::SharedPtr pCurLinearZTexture,
                             Texture::SharedPtr pPrevLinearZAndNormalTexture);
   void computeFilteredMoments(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture);
-  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pAlbedoTexture, Texture::SharedPtr pCurLinearZTexture);
+  void computeAtrousDecomposition(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture);
 };

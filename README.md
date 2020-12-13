@@ -4,9 +4,9 @@
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
 
-- [Shenyue Chen](https://github.com/EvsChen)
-- [Szeyu Chan](https://github.com/AsteriskChan)
-- [Zijing Peng](https://github.com/ZijingPeng)
+- Shenyue Chen  [Email](mailto:shenyuec@seas.upenn.edu)  [GitHub](https://github.com/EvsChen)  [LinkedIn](https://www.linkedin.com/in/shenyue-chen-5b2728119/)
+- Szeyu Chan  [Email](mailto:sychan@seas.upenn.edu)  [GitHub](https://github.com/AsteriskChan)  [LinkedIn](https://www.linkedin.com/in/szeyuchan11/)
+- Zijing Peng  [Email](mailto:zijingp@seas.upenn.edu)  [GitHub](https://github.com/ZijingPeng)  [LinkedIn](https://www.linkedin.com/in/zijing-peng/)
 
 ## Introduction
 
@@ -28,7 +28,7 @@ This project is to implement a hybrid rendering pipeline that combines both rast
 
 Shadows are implemented by launching rays towards the light source. To create soft penumbra shadows, we cast rays by sampling in the shape of a cone.
 
-| Hard Shadow              | Soft Shadow (100 spp) |
+| Hard Shadow              | Soft Shadow (1 spp) |
 | ------------------------ | --------------------- |
 | ![](/img/hardshadow.png) |  ![](/img/softshadow.png)   |
 
@@ -46,7 +46,7 @@ We did not implement global illumination in this project, ambient occlusion is u
 | ---------------- | ---------------------- |
 | ![](/img/ao.png) | ![](/img/ao_svgf.png)  |
 
-To improve the performance, we merge the shadow buffer and the AO buffer and add the filter.
+To improve the performance, we merge the shadow buffer and the AO buffer into one buffer and then add the filter.
 
 ### Reflection
 
@@ -72,11 +72,12 @@ We also tried to improve the performance by launching a quarter ray per pixel. I
 
 ## Credit
 
+- [Hybrid Rendering for Real-Time Ray Tracing](https://link.springer.com/chapter/10.1007/978-1-4842-4427-2_25), Colin Barré-Brisebois, Henrik Halén, Graham Wihlidal, Andrew Lauritzen, Jasper Bekkers, Tomasz Stachowiak and Johan Andersson. *Ray Tracing Gems*.
 - [GDC Talk: Shiny Pixels and Beyond: Real-Time Raytracing at SEED](https://www.gdcvault.com/play/1024801/-Real-time-Raytracing-for) 
-- [Hybrid Rendering for Real-Time Ray Tracing](https://link.springer.com/chapter/10.1007/978-1-4842-4427-2_25)
-- [Falcor](https://github.com/NVIDIAGameWorks/Falcor)
-- [Introduction To DirectX Raytracing](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html)
-- [Pica Pica Assets](https://github.com/SEED-EA/pica-pica-assets)
-- https://sketchfab.com/3d-models/mirrors-edge-apartment-interior-scene-9804e9f2fe284070b081c96ceaf8af96 by Aurélien Martel
-  
+- [Falcor](https://github.com/NVIDIAGameWorks/Falcor), a real-time rendering framework supporting DirectX 12. We used this framework to build our project.
+- [Introduction To DirectX Raytracing](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html), really helpful!
+- Models we use for testing:
+  - [Pica Pica Assets](https://github.com/SEED-EA/pica-pica-assets) by SEED, EA.
+  - [Mirror's Edge Apartment - Interior Scene](https://sketchfab.com/3d-models/mirrors-edge-apartment-interior-scene-9804e9f2fe284070b081c96ceaf8af96) by Aurélien Martel.
+  - [Anime Classroom](https://sketchfab.com/3d-models/anime-classroom-1375eb36d7b640bfad315e76053d63c6) by BigMiniGeek.
 

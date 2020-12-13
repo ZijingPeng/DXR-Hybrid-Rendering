@@ -176,7 +176,7 @@ void ReflectRayGen()
 			if (gHalfResolution) {
 				float3 hitPoint = rayPayload.hitPoint;
 				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy].xyz)));
-				gOutput[launchIndexCopy + uint2(0, 1)] = float4(NdotL * bounceColor, 1);
+				gOutput[launchIndexCopy] = float4(NdotL * bounceColor, 1);
 				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy + uint2(0, 1)].xyz)));
 				gOutput[launchIndexCopy + uint2(0, 1)] = float4(NdotL * bounceColor, 1);
 				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 0)].xyz)));

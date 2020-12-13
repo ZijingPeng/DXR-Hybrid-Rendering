@@ -76,6 +76,7 @@ void ReflectionPass::execute(RenderContext* pRenderContext)
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
 	rayGenVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
 	rayGenVars["RayGenCB"]["gOpenScene"] = mIsOpenScene;
+	rayGenVars["RayGenCB"]["gHalfResolution"] = mHalfResolution;
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	rayGenVars["gPos"] = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"] = mpResManager->getTexture("WorldNormal");
@@ -94,6 +95,7 @@ void ReflectionPass::renderGui(Gui* pGui)
 
 
 	dirty |= (int)pGui->addCheckBox("Is Open Scene", mIsOpenScene);
+	dirty |= (int)pGui->addCheckBox("Half Resolution", mHalfResolution);
 
 	// If any of our UI parameters changed, let the pipeline know we're doing something different next frame
 	if (dirty) setRefreshFlag();

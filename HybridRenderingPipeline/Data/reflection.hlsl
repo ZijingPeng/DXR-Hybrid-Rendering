@@ -35,6 +35,7 @@ struct ReflectRayPayload
 	uint rndSeed;
 	bool isOpenScene;
 	float3 hitPoint;
+	bool miss;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -60,6 +61,7 @@ RWTexture2D<float4> gOutput;
 void ReflectMiss(inout ReflectRayPayload hitData : SV_RayPayload)
 {
 	hitData.reflectColor = hitData.isOpenScene ? float4(0.053, 0.081, 0.092, 1.0f) : float4(0, 0, 0, 1);
+	hitData.miss = true;
 }
 
 [shader("anyhit")]
@@ -153,13 +155,13 @@ void ReflectRayGen()
 		rayReflect.Direction = L;
 		rayReflect.TMin = gMinT;
 		rayReflect.TMax = 1e+38f;
-		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed, gOpenScene, float3(0)};
+		ReflectRayPayload rayPayload = { float4(0, 0, 0, 1), randSeed, gOpenScene, float3(0), false };
 		TraceRay(gRtScene, RAY_FLAG_NONE, 0xFF, 0, hitProgramCount, 0, rayReflect, rayPayload);
 
 		bounceColor = rayPayload.reflectColor.xyz;
 
 		bool colorsNan = any(isnan(bounceColor));
-		if (colorsNan) {
+		if (colorsNan || rayPayload.miss) {
 			gOutput[launchIndexCopy] = float4(bounceColor, 1);
 			if (gHalfResolution) {
 				gOutput[launchIndexCopy + uint2(0, 1)] = float4(bounceColor, 1);
@@ -169,15 +171,22 @@ void ReflectRayGen()
 		}
 		else {
 			// Compute some dot products needed for shading
-			float NdotL = saturate(dot(N, L));
-
-			gOutput[launchIndexCopy] = float4(NdotL * bounceColor, 1);
+			float NdotL;
 
 			if (gHalfResolution) {
 				float3 hitPoint = rayPayload.hitPoint;
-				gOutput[launchIndexCopy + uint2(0, 1)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(0, 1)].xyz)), 1);
-				gOutput[launchIndexCopy + uint2(1, 0)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 0)].xyz)), 1);
-				gOutput[launchIndexCopy + uint2(1, 1)] = float4(bounceColor * saturate(dot(N, rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 1)].xyz)), 1);
+				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy].xyz)));
+				gOutput[launchIndexCopy + uint2(0, 1)] = float4(NdotL * bounceColor, 1);
+				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy + uint2(0, 1)].xyz)));
+				gOutput[launchIndexCopy + uint2(0, 1)] = float4(NdotL * bounceColor, 1);
+				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 0)].xyz)));
+				gOutput[launchIndexCopy + uint2(1, 0)] = float4(NdotL * bounceColor, 1);
+				NdotL = saturate(dot(N, normalize(rayPayload.hitPoint - gPos[launchIndexCopy + uint2(1, 1)].xyz)));
+				gOutput[launchIndexCopy + uint2(1, 1)] = float4(NdotL * bounceColor, 1);
+			}
+			else {
+				NdotL = saturate(dot(N, L));
+				gOutput[launchIndexCopy] = float4(NdotL * bounceColor, 1);
 			}
 		}
 	}

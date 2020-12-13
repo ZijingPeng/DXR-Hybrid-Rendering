@@ -36,8 +36,7 @@ bool isNaN(float f)
     return (u > 0x7F800000);           // greater than Inf is NaN
 }
 
-Texture2D   gMotion;
-Texture2D   gPositionNormalFwidth;
+Texture2D   gMotionAndFWidth;
 Texture2D   gColor;
 Texture2D   gPrevIllum;
 Texture2D   gPrevMoments;
@@ -77,8 +76,8 @@ bool loadPrevData(float2 posH, out float4 prevIllum, out float2 prevMoments, out
     const int2 ipos = posH;
     const float2 imageDim = float2(getTextureDims(gColor, 0));
 
-    const float2 motion = gMotion[ipos].xy;
-    const float normalFwidth = gPositionNormalFwidth[ipos].y;
+    const float2 motion = gMotionAndFWidth[ipos].xy;
+    const float normalFwidth = gMotionAndFWidth[ipos].w;
 
     // +0.5 to account for texel center offset
     const int2 iposPrev = int2(float2(ipos)+motion.xy * imageDim + float2(0.5, 0.5));

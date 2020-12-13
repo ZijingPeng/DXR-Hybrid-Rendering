@@ -29,7 +29,7 @@ struct GBuffer
 	float4 matSpec  : SV_Target3;
   float4 matEmissive : SV_Target4;
   float4 linearZAndNormal : SV_Target5;
-  float2 motionVecFwidth : SV_Target6;
+  float4 motionVecFwidth : SV_Target6;
 };
 
 cbuffer PerImageCB {

@@ -38,11 +38,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	int idx = 0;
 	constexpr bool useAccum = false;
-	constexpr bool useRaytracing = false;
 	constexpr bool perf = true;
 
 	pipeline->setPass(idx++, SimpleGBufferPass::create());
-	pipeline->setPass(idx++, AmbientOcclusionPass::create("aoChannel"));
+	pipeline->setPass(idx++, DirectLightingPass::create("directLightingChannel"));
 	if (useAccum) {
 		pipeline->setPass(idx++, ReflectionPass::create("reflectionFilter"));
 		pipeline->setPass(idx++, SimpleAccumulationPass::create("reflectionFilter"));
@@ -51,9 +50,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		pipeline->setPass(idx++, ReflectionPass::create("reflectionOut"));
 		pipeline->setPass(idx++, SVGFPass::create("reflectionFilter", "reflectionOut"));
 	}
+	pipeline->setPass(idx++, AmbientOcclusionPass::create("aoChannel"));
 	pipeline->setPass(idx++, ShadowPass::create("shadowChannel"));
 	pipeline->setPass(idx++, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
-	pipeline->setPass(idx++, DirectLightingPass::create("directLightingChannel"));
 	pipeline->setPass(idx++, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
 	pipeline->setPass(idx++, FinalStagePass::create(perf ? ResourceManager::kOutputChannel : "finalOutput"));
 	if (!perf) {

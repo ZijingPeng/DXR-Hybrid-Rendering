@@ -220,7 +220,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 
   // Swap resources so we're ready for next frame.
   std::swap(mpCurReprojFbo, mpPrevReprojFbo);
-  pRenderContext->blit(mpLinearZAndNormalFbo->getColorTexture(0)->getSRV(),
+  pRenderContext->blit(pLinearZAndNormalTexture->getSRV(),
                         pPrevLinearZAndNormalTexture->getRTV());
 }
 

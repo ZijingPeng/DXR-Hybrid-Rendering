@@ -44,6 +44,9 @@ void RenderingPipeline::onLoad(SampleCallbacks* pSample, const RenderContext::Sh
 {
 	// Give the GUI some heft, so we don't need to resize all the time
 	pSample->setDefaultGuiSize(300, 800);
+#ifndef _DEBUG
+	pSample->toggleGlobalUI(false);
+#endif
 
 	// Create our resource manager
 	mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y, pSample);
@@ -214,7 +217,7 @@ bool RenderingPipeline::isPassValid(::RenderPass::SharedPtr pCheckPass, uint32_t
 void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 {
     //Falcor::ProfilerEvent _profileEvent("renderGUI");
-
+#ifdef _DEBUG
 	pGui->addSeparator();
 
 	// Add a button to allow the user to load a scene
@@ -383,6 +386,7 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
     pGui->addSeparator();
     pGui->addText(Falcor::gProfileEnabled ? "Press (P):  Hide profiling window" : "Press (P):  Show profiling window");
     pGui->addSeparator();
+#endif
 }
 
 void RenderingPipeline::removePassFromPipeline(uint32_t passNum)

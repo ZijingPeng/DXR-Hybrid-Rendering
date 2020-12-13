@@ -30,9 +30,6 @@
 #include "../CommonPasses/SimpleGBufferPass.h"
 #include "../CommonPasses/SimpleAccumulationPass.h"
 #include "../CommonPasses/CopyToOutputPass.h"
-#include "../CommonPasses/LightProbeGBufferPass.h"
-#include "../CommonPasses/SimpleToneMappingPass.h"
-#include "../PathTracingPipeline/Passes/GlobalIllumination.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -40,8 +37,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	RenderingPipeline *pipeline = new RenderingPipeline();
 
 	int idx = 0;
-	bool useAccum = false;
-	bool useRaytracing = false;
+	constexpr bool useAccum = false;
+	constexpr bool useRaytracing = false;
+	constexpr bool perf = true;
 
 	pipeline->setPass(idx++, SimpleGBufferPass::create());
 	pipeline->setPass(idx++, AmbientOcclusionPass::create("aoChannel"));
@@ -57,22 +55,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	pipeline->setPass(idx++, MergePass::create({ "aoChannel", "shadowChannel" }, "shadowMerge"));
 	pipeline->setPass(idx++, DirectLightingPass::create("directLightingChannel"));
 	pipeline->setPass(idx++, SVGFShadowPass::create("shadowFilter", "shadowMerge"));
-	pipeline->setPass(idx++, FinalStagePass::create("finalOutput"));
-	// Ray tracing
-	if (useRaytracing) {
-		pipeline->setPass(idx++, LightProbeGBufferPass::create());
-		pipeline->setPass(idx++, GlobalIlluminationPass::create("HDRColorOutput"));  // Output our result to "HDRColorOutput"
-		pipeline->setPass(idx++, SimpleAccumulationPass::create("HDRColorOutput"));     // Accumulate on "HDRColorOutput"
-		pipeline->setPass(idx++, SimpleToneMappingPass::create("HDRColorOutput", "raytraceOutput"));  // Tonemap "HDRColorOutput" to the output channel
+	pipeline->setPass(idx++, FinalStagePass::create(perf ? ResourceManager::kOutputChannel : "finalOutput"));
+	if (!perf) {
+		pipeline->setPass(idx++, ComparePass::create("compareOutput"));
+		pipeline->setPass(idx++, CopyToOutputPass::create());
 	}
-	pipeline->setPass(idx++, ComparePass::create("compareOutput"));
-	pipeline->setPass(idx++, CopyToOutputPass::create());
 	
-
 	// Define a set of config / window parameters for our program
-  SampleConfig config;
-  config.windowDesc.title = "Hybrid Rendering";
-  config.windowDesc.resizableWindow = true;
+	SampleConfig config;
+	config.windowDesc.title = "Hybrid Rendering";
+	config.windowDesc.resizableWindow = true;
 
 	// Start our program!
 	RenderingPipeline::run(pipeline, config);

@@ -22,7 +22,7 @@
 
 namespace {
 	// Where is our shader located?
-	const char kPackLinearZAndNormalShader[] = "SVGFShadow\\SVGFPackLinearZAndNormal.ps.hlsl";
+	const char kPackLinearZAndNormalShader[] = "SVGFPackLinearZAndNormal.ps.hlsl";
 	const char kReprojectShader[] = "SVGFShadow\\SVGFReproject.ps.hlsl";
 	const char kAtrousShader[] = "SVGFShadow\\SVGFAtrous.ps.hlsl";
 	const char kFilterMomentShader[] = "SVGFShadow\\SVGFFilterMoments.ps.hlsl";
@@ -98,7 +98,7 @@ void SVGFShadowPass::allocateFbos(glm::uvec2 dim)
     desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // illumination
     desc.setColorTarget(1, Falcor::ResourceFormat::RG32Float);   // moments
     desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
-	  mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
+	mpCurReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
     mpPrevReprojFbo = FboHelper::create2D(dim.x, dim.y, desc);
   }
 
@@ -182,7 +182,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 {
 	// Grab the texture to write to
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
-  Texture::SharedPtr pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
+	Texture::SharedPtr pAlbedoTexture = mpResManager->getTexture(kInputBufferAlbedo);
 	Texture::SharedPtr pEmissionTexture = mpResManager->getTexture(kInputBufferEmission);
 	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
 	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
@@ -229,15 +229,15 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 
 
 	// Compute albedo * filtered illumination and add emission back in.
-  auto shaderVars = mpFinalModulate->getVars();
-  // shaderVars["gAlbedo"] = pAlbedoTexture;
-  shaderVars["gEmission"] = pEmissionTexture;
-  shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-  mpGfxState->setFbo(mpFinalFbo);
-  mpFinalModulate->execute(pRenderContext, mpGfxState);
+  //auto shaderVars = mpFinalModulate->getVars();
+  //// shaderVars["gAlbedo"] = pAlbedoTexture;
+  //shaderVars["gEmission"] = pEmissionTexture;
+  //shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+  //mpGfxState->setFbo(mpFinalFbo);
+  //mpFinalModulate->execute(pRenderContext, mpGfxState);
 
   // Blit into the output texture.
-  pRenderContext->blit(mpFinalFbo->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
+  pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
 
   // Swap resources so we're ready for next frame.
   std::swap(mpCurReprojFbo, mpPrevReprojFbo);

@@ -22,7 +22,7 @@
 
 namespace {
 	// Where is our shader located?
-	const char kPackLinearZAndNormalShader[] = "SVGF\\SVGFPackLinearZAndNormal.ps.hlsl";
+	const char kPackLinearZAndNormalShader[] = "SVGFPackLinearZAndNormal.ps.hlsl";
 	const char kReprojectShader[] = "SVGF\\SVGFReproject.ps.hlsl";
 	const char kAtrousShader[] = "SVGF\\SVGFAtrous.ps.hlsl";
 	const char kFilterMomentShader[] = "SVGF\\SVGFFilterMoments.ps.hlsl";
@@ -231,16 +231,16 @@ void SVGFPass::execute(RenderContext* pRenderContext)
 
 
 	// Compute albedo * filtered illumination and add emission back in.
-  auto shaderVars = mpFinalModulate->getVars();
-  shaderVars["gAlbedo"] = pAlbedoTexture;
-  shaderVars["gEmission"] = pEmissionTexture;
-  shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
-  //shaderVars["gIllumination"] = mpCurReprojFbo->getColorTexture(0);
-  mpGfxState->setFbo(mpFinalFbo);
-  mpFinalModulate->execute(pRenderContext, mpGfxState);
+  //auto shaderVars = mpFinalModulate->getVars();
+  //shaderVars["gAlbedo"] = pAlbedoTexture;
+  //shaderVars["gEmission"] = pEmissionTexture;
+  //shaderVars["gIllumination"] = mpPingPongFbo[0]->getColorTexture(0);
+  ////shaderVars["gIllumination"] = mpCurReprojFbo->getColorTexture(0);
+  //mpGfxState->setFbo(mpFinalFbo);
+  //mpFinalModulate->execute(pRenderContext, mpGfxState);
 
   // Blit into the output texture.
-  pRenderContext->blit(mpFinalFbo->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
+  pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
 
   // Swap resources so we're ready for next frame.
   std::swap(mpCurReprojFbo, mpPrevReprojFbo);

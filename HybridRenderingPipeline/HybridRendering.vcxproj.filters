@@ -177,11 +177,6 @@
     <None Include="Data\SVGFShadow\SVGFCommon.slang">
       <Filter>Shaders\SVGFShadow</Filter>
     </None>
-    <None Include="Data\SVGFShadow\SVGFAtrous.ps.hlsl" />
-    <None Include="Data\SVGFShadow\SVGFFilterMoments.ps.hlsl" />
-    <None Include="Data\SVGFShadow\SVGFFinalModulate.ps.hlsl" />
-    <None Include="Data\SVGFShadow\SVGFPackLinearZAndNormal.ps.hlsl" />
-    <None Include="Data\SVGFShadow\SVGFReproject.ps.hlsl" />
     <None Include="Data\aoCommonUtils.hlsli">
       <Filter>Shaders</Filter>
     </None>
@@ -220,6 +215,21 @@
     </None>
     <None Include="Data\rtShadowRay.hlsli">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFReproject.ps.hlsl">
+      <Filter>Shaders\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFAtrous.ps.hlsl">
+      <Filter>Shaders\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFFilterMoments.ps.hlsl">
+      <Filter>Shaders\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFFinalModulate.ps.hlsl">
+      <Filter>Shaders\SVGFShadow</Filter>
+    </None>
+    <None Include="Data\SVGFShadow\SVGFPackLinearZAndNormal.ps.hlsl">
+      <Filter>Shaders\SVGFShadow</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

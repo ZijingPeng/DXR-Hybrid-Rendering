@@ -29,9 +29,8 @@ namespace {
 	// Input buffers
 	const char kInputBufferWorldPosition[] = "WorldPosition";
 	const char kInputBufferWorldNormal[] = "WorldNormal";
-	const char kInputBufferPosNormalFwidth[] = "PosNormalFWidth";
 	const char kInputBufferLinearZAndNormal[] = "linearZAndNormal";
-	const char kInputBufferMotionVector[] = "MotiveVectors";
+	const char kInputBufferMotionVecAndFWidth[] = "MotiveVectorsAndFWidth";
 
 	// Internal buffer names
 	const char kInternalBufferPreviousLinearZAndNormal[] = "Shadow Previous Linear Z and Packed Normal";
@@ -60,9 +59,8 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 	 mpResManager->requestTextureResources({
 		kInputBufferWorldPosition,
 		kInputBufferWorldNormal,
-		kInputBufferPosNormalFwidth,
 		kInputBufferLinearZAndNormal,
-		kInputBufferMotionVector
+		kInputBufferMotionVecAndFWidth
 	});
 
 	mpResManager->requestTextureResources({
@@ -156,9 +154,8 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
 	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
 	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
-	Texture::SharedPtr pPosNormalFwidthTexture = mpResManager->getTexture(kInputBufferPosNormalFwidth);
 	Texture::SharedPtr pLinearZAndNormalTexture = mpResManager->getTexture(kInputBufferLinearZAndNormal);
-	Texture::SharedPtr pMotionVectorTexture = mpResManager->getTexture(kInputBufferMotionVector);
+	Texture::SharedPtr pMotionVectorAndFWidthTexture = mpResManager->getTexture(kInputBufferMotionVecAndFWidth);
 	Texture::SharedPtr pOutputTexture = mpResManager->getTexture(mOutputTexName);
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
@@ -175,8 +172,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 	}
   
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
-  computeReprojection(pRenderContext, pColorTexture, pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
-                            pPrevLinearZAndNormalTexture);
+  computeReprojection(pRenderContext, pColorTexture, pMotionVectorAndFWidthTexture, pLinearZAndNormalTexture, pPrevLinearZAndNormalTexture);
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
 
@@ -190,16 +186,14 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 
 void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext,
                                           Texture::SharedPtr pColorTexture,
-                                          Texture::SharedPtr pMotionVectorTexture,
-                                          Texture::SharedPtr pPositionNormalFwidthTexture,
+                                          Texture::SharedPtr pMotionVectorAndFWidthTexture,
                                           Texture::SharedPtr pCurLinearZTexture,
                                           Texture::SharedPtr pPrevLinearZTexture)
 {
   auto shaderVars = mpReprojection->getVars();
 
-  shaderVars["gMotion"]        = pMotionVectorTexture;
+  shaderVars["gMotionAndFWidth"]        = pMotionVectorAndFWidthTexture;
   shaderVars["gColor"]         = pColorTexture;
-  shaderVars["gPositionNormalFwidth"] = pPositionNormalFwidthTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
   shaderVars["gLinearZAndNormal"]       = pCurLinearZTexture;

@@ -28,9 +28,8 @@ struct GBuffer
 	float4 matDif   : SV_Target2;
 	float4 matSpec  : SV_Target3;
   float4 matEmissive : SV_Target4;
-  float2 posNormalFwidth : SV_Target5;
-  float4 linearZAndNormal : SV_Target6;
-  float2 motionVec : SV_Target7;
+  float4 linearZAndNormal : SV_Target5;
+  float2 motionVecFwidth : SV_Target6;
 };
 
 cbuffer PerImageCB {
@@ -60,7 +59,6 @@ GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Posi
   
 
   float3 albedo = hitPt.diffuse;
-  float2 posNormalFwidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
   const float linearZ = vsOut.posH.z * vsOut.posH.w;
   // Pack normal into the last component of linear z
   const float2 nPacked = ndir_to_oct_snorm(hitPt.N);
@@ -69,7 +67,9 @@ GBuffer main(VertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Posi
   int2 ipos = int2(vsOut.posH.xy);
   const float2 pixelPos = ipos + float2(0.5, 0.5); // Current sample in pixel coords.
   const float4 prevPosH = vsOut.prevPosH; // Sample in previous frame in clip space coords, no jittering applied.
-  gBufOut.motionVec = calcMotionVector(pixelPos, prevPosH, gRenderTargetDim) + float2(gCamera.jitterX, -gCamera.jitterY); // Remove camera jitter from motion vector
+  float2 motionVec = calcMotionVector(pixelPos, prevPosH, gRenderTargetDim) + float2(gCamera.jitterX, -gCamera.jitterY);
+  float2 posNormalFwidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
+  gBufOut.motionVecFwidth = float4(motionVec.x, motionVec.y, posNormalFwidth.x, posNormalFwidth.y);
 
 	return gBufOut;
 }

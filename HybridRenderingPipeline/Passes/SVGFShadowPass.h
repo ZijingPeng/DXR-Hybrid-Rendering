@@ -51,7 +51,6 @@ protected:
   bool    mFilterEnabled       = true;
   int32_t mFilterIterations    = 4;
   int32_t mFeedbackTap         = 1;
-  float   mVarainceEpsilon     = 1e-4f;
   float   mPhiColor            = 10.0f;
   float   mPhiNormal           = 128.0f;
   float   mAlpha               = 0.05f;
@@ -60,9 +59,8 @@ protected:
 private:
   void allocateFbos(glm::uvec2 dim);
   void computeReprojection(RenderContext* pRenderContext,
-							Texture::SharedPtr pColorTexture,
-                            Texture::SharedPtr pMotionVectorTexture,
-                            Texture::SharedPtr pPositionNormalFwidthTexture,
+							              Texture::SharedPtr pColorTexture,
+                            Texture::SharedPtr pMotionVectorAndFWidthTexture,
                             Texture::SharedPtr pCurLinearZTexture,
                             Texture::SharedPtr pPrevLinearZAndNormalTexture);
   void computeFilteredMoments(RenderContext* pRenderContext, Texture::SharedPtr pCurLinearZTexture);

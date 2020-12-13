@@ -185,7 +185,7 @@ void SVGFPass::execute(RenderContext* pRenderContext)
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
 
-  computeAtrousDecomposition(pRenderContext, pAlbedoTexture, pLinearZAndNormalTexture);
+  computeAtrousDecomposition(pRenderContext, pLinearZAndNormalTexture);
 
   pRenderContext->blit(mpPingPongFbo[0]->getColorTexture(0)->getSRV(), pOutputTexture->getRTV());
 

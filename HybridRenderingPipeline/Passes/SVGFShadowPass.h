@@ -60,6 +60,7 @@ protected:
 private:
   void allocateFbos(glm::uvec2 dim);
   void computeReprojection(RenderContext* pRenderContext,
+							Texture::SharedPtr pColorTexture,
                             Texture::SharedPtr pMotionVectorTexture,
                             Texture::SharedPtr pPositionNormalFwidthTexture,
                             Texture::SharedPtr pCurLinearZTexture,

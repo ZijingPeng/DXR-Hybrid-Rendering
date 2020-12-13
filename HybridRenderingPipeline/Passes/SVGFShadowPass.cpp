@@ -58,7 +58,6 @@ bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::
 	mpResManager = pResManager;
 	
 	 mpResManager->requestTextureResources({
-		kInputBufferEmission,
 		kInputBufferWorldPosition,
 		kInputBufferWorldNormal,
 		kInputBufferPosNormalFwidth,
@@ -176,7 +175,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 	}
   
   Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
-  computeReprojection(pRenderContext, pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
+  computeReprojection(pRenderContext, pColorTexture, pMotionVectorTexture, pPosNormalFwidthTexture, pLinearZAndNormalTexture,
                             pPrevLinearZAndNormalTexture);
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);

@@ -1,8 +1,8 @@
 # DXR-Hybrid-Rendering
 
-![](/img/ours.png)
+![](/img/demo.gif)
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
+University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
 
 - Shenyue Chen  [Email](mailto:shenyuec@seas.upenn.edu)  [GitHub](https://github.com/EvsChen)  [LinkedIn](https://www.linkedin.com/in/shenyue-chen-5b2728119/)
 - Szeyu Chan  [Email](mailto:sychan@seas.upenn.edu)  [GitHub](https://github.com/AsteriskChan)  [LinkedIn](https://www.linkedin.com/in/szeyuchan11/)
@@ -65,6 +65,8 @@ We also tried to improve the performance by launching a quarter ray per pixel. I
 ## Performance Analysis
 
 ## Results
+
+![](/img/ours.png)
 
 ![](/img/classroom.png)
 

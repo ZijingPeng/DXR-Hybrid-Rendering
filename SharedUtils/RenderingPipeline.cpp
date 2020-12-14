@@ -217,6 +217,11 @@ bool RenderingPipeline::isPassValid(::RenderPass::SharedPtr pCheckPass, uint32_t
 void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 {
     //Falcor::ProfilerEvent _profileEvent("renderGUI");
+  if (Falcor::gProfileEnabled) {
+    for (auto &p : mPassAvgTime) {
+      pGui->addText(p.first + std::to_string(p.second));
+    }
+  }
 #ifdef _DEBUG
 	pGui->addSeparator();
 
@@ -429,6 +434,8 @@ void RenderingPipeline::setPass(uint32_t passNum, ::RenderPass::SharedPtr pTarge
     {
         insertPassIntoPipeline(i);
     }
+
+    mPassAvgTime[pTargetPass->getName()] = 0.0;
 
     // Get unique pass index. Add pass to list of available passes.
     uint32_t passIdx = kNullPassId;
@@ -671,16 +678,20 @@ void RenderingPipeline::onFrameRender(SampleCallbacks* pSample, const RenderCont
     {
         if (mActivePasses[passNum])
         {
+            std::string passName = mActivePasses[passNum]->getName();
             if (Falcor::gProfileEnabled)
             {
                 // Insert a per-pass profiling event.  
                 assert(passNum < mProfileNames.size());
-                Falcor::ProfilerEvent _profileEvent(mActivePasses[passNum]->getName().c_str());
+                Falcor::ProfilerEvent _profileEvent(passName.c_str());
                 mActivePasses[passNum]->onExecute(pRenderContext.get());
             }
             else
             {
                 mActivePasses[passNum]->onExecute(pRenderContext.get());
+            }
+            if (Falcor::gProfileEnabled) {
+                mPassAvgTime[passName] = Profiler::getEventGpuTime(passName.c_str());
             }
         }
     }

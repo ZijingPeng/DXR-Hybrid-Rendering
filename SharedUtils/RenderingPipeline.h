@@ -20,6 +20,7 @@
 #include "Falcor.h"
 #include "RenderPass.h"
 #include "ResourceManager.h"
+#include <unordered_map>
 
 class RenderingPipeline : public Renderer, inherit_shared_from_this<Renderer, RenderingPipeline>
 {
@@ -140,7 +141,7 @@ private:
 	std::vector< std::string > mPipeDescription;            ///< Can store a description of the pipeline for display in the UI
 	std::vector< HashedString > mProfileNames;
 	std::vector< double > mProfileGPUTimes;
-    std::vector< double > mProfileLastGPUTimes;
+  std::vector< double > mProfileLastGPUTimes;
 
 	// Are we storing an environment map?
 	Gui::DropdownList mEnvMapSelector;
@@ -169,4 +170,8 @@ private:
 	uint32_t          mMinTSelection = 3;
 
     std::string mTmpStr = "";
+
+  // Custom profiling
+  int mFrameCnt = 0;
+  std::unordered_map<std::string, double> mPassAvgTime;
 };

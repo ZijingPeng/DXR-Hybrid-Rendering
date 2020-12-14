@@ -35,6 +35,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 {
 	// Create our rendering pipeline
 	RenderingPipeline *pipeline = new RenderingPipeline();
+  Falcor::gProfileEnabled = true;
 
 	int idx = 0;
 	constexpr bool useAccum = false;

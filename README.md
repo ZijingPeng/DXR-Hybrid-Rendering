@@ -67,8 +67,11 @@ We also tried to improve the performance by launching a quarter ray per pixel. I
 ## Performance Analysis
 In this performance analysis section, we compare our hybrid rendering pipeline to a naively-implemented path tracer under different bounces.
 
-<img src="img/picapica-perf.png" width="400" />
-<img src="img/living-room-perf.png" width="400" />
+|    |   |
+| ------------------------- | ---------------------------------- |
+| <img src="img/picapica-perf.png" width="400" /> | <img src="img/living-room-perf.png" width="400" />         |
+
+
 
 First, we use the pica-pica scene and find out that the path tracer performs better in 1-3 bounces. We then use the living room scene. In this scene, our hybrid rendering pipeline out-performs the path tracer in all 1-3 bounces. In complex lighting scenarios, our hybrid renderer has a similar performance as the simple scene, while the path tracer's performance decreases significantly.
 

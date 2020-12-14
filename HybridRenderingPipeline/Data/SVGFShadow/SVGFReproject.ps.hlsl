@@ -75,7 +75,7 @@ bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal
 bool loadPrevData(float2 posH, out float4 prevIllum, out float2 prevMoments, out float historyLength)
 {
     const int2 ipos = posH;
-    const float2 imageDim = float2(getTextureDims(gColor, 0));
+    const float2 imageDim = float2(getTextureDims(gShadow, 0));
 
     const float2 motion = gMotionAndFWidth[ipos].xy;
     const float normalFwidth = gMotionAndFWidth[ipos].w;

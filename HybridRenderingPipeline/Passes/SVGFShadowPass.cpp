@@ -40,8 +40,8 @@ namespace {
 
 // Define our constructor methods
 SVGFShadowPass::SharedPtr SVGFShadowPass::create(const std::string& bufferToAccumulate,
-                                                  const std::string& directShadowBuffer,
-                                                  const std::string& aoBuffer)
+                                                 const std::string& directShadowBuffer,
+                                                 const std::string& aoBuffer)
 {
 	return SharedPtr(new SVGFShadowPass(bufferToAccumulate, directShadowBuffer, aoBuffer));
 }
@@ -51,7 +51,7 @@ SVGFShadowPass::SVGFShadowPass(const std::string& bufferToAccumulate,
                                 const std::string& aoBuffer)
 	: ::RenderPass("SVGF Shadow Pass", "SVGF Shadow Options")
 {
-	  mOutputTexName = bufferOut;
+	 mOutputTexName = bufferToAccumulate;
     mDirectShadowTexName = directShadowBuffer;
     mAoTexName = aoBuffer;
 }
@@ -178,7 +178,7 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 		return;
 	}
   
-  computeReprojection(pRenderContext, pColorTexture, pMotionVectorAndFWidthTexture, pLinearZAndNormalTexture, pPrevLinearZAndNormalTexture);
+  computeReprojection(pRenderContext, pShadowTexture, pAoTexture, pMotionVectorAndFWidthTexture, pLinearZAndNormalTexture, pPrevLinearZAndNormalTexture);
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
 

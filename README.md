@@ -12,6 +12,8 @@ University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Proj
 
 This project is to implement a hybrid rendering pipeline that combines both rasterization and raytracing to generate real-time effects. This hybrid rendering pipeline is built based on EA's [PICA PICA](https://www.ea.com/seed/news/seed-project-picapica) project. The pipeline includes multiple passes -- shadow, ambient occlusions, direct lighting and reflection. To denoise our results, we also implemented a SVGF filter. 
 
+![](/img/passes.png)
+
 ## Prerequisites
 
 - Windows 10 version 1809 or newer

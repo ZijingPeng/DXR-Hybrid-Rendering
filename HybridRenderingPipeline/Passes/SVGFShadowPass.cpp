@@ -39,16 +39,21 @@ namespace {
 };
 
 // Define our constructor methods
-SVGFShadowPass::SharedPtr SVGFShadowPass::create(const std::string& bufferOut, const std::string &inputColorBuffer)
+SVGFShadowPass::SharedPtr SVGFShadowPass::create(const std::string& bufferToAccumulate,
+                                                  const std::string& directShadowBuffer,
+                                                  const std::string& aoBuffer)
 {
-	return SharedPtr(new SVGFShadowPass(bufferOut, inputColorBuffer));
+	return SharedPtr(new SVGFShadowPass(bufferToAccumulate, directShadowBuffer, aoBuffer));
 }
 
-SVGFShadowPass::SVGFShadowPass(const std::string& bufferOut, const std::string &inputColorBuffer)
+SVGFShadowPass::SVGFShadowPass(const std::string& bufferToAccumulate,
+                                const std::string& directShadowBuffer,
+                                const std::string& aoBuffer)
 	: ::RenderPass("SVGF Shadow Pass", "SVGF Shadow Options")
 {
 	  mOutputTexName = bufferOut;
-    mInputTexName = inputColorBuffer;
+    mDirectShadowTexName = directShadowBuffer;
+    mAoTexName = aoBuffer;
 }
 
 bool SVGFShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -150,13 +155,15 @@ void SVGFShadowPass::renderGui(Gui* pGui)
 
 void SVGFShadowPass::execute(RenderContext* pRenderContext)
 {
-	// Grab the texture to write to
-	Texture::SharedPtr pColorTexture = mpResManager->getTexture(mInputTexName);
+	Texture::SharedPtr pShadowTexture = mpResManager->getTexture(mDirectShadowTexName);
+	Texture::SharedPtr pAoTexture = mpResManager->getTexture(mAoTexName);
 	Texture::SharedPtr pWorldPositionTexture = mpResManager->getTexture(kInputBufferWorldPosition);
 	Texture::SharedPtr pWorldNormalTexture = mpResManager->getTexture(kInputBufferWorldNormal);
 	Texture::SharedPtr pLinearZAndNormalTexture = mpResManager->getTexture(kInputBufferLinearZAndNormal);
 	Texture::SharedPtr pMotionVectorAndFWidthTexture = mpResManager->getTexture(kInputBufferMotionVecAndFWidth);
 	Texture::SharedPtr pOutputTexture = mpResManager->getTexture(mOutputTexName);
+
+  Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
 	if (!pOutputTexture) return;
@@ -167,11 +174,10 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 	}
 
 	if (!mFilterEnabled) {
-		pRenderContext->blit(pColorTexture->getSRV(), pOutputTexture->getRTV());
+		pRenderContext->blit(pShadowTexture->getSRV(), pOutputTexture->getRTV());
 		return;
 	}
   
-  Texture::SharedPtr pPrevLinearZAndNormalTexture = mpResManager->getTexture(kInternalBufferPreviousLinearZAndNormal);
   computeReprojection(pRenderContext, pColorTexture, pMotionVectorAndFWidthTexture, pLinearZAndNormalTexture, pPrevLinearZAndNormalTexture);
   
   computeFilteredMoments(pRenderContext, pLinearZAndNormalTexture);
@@ -185,7 +191,8 @@ void SVGFShadowPass::execute(RenderContext* pRenderContext)
 }
 
 void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext,
-                                          Texture::SharedPtr pColorTexture,
+                                          Texture::SharedPtr pShadowTexture,
+                                          Texture::SharedPtr pAoTexture,
                                           Texture::SharedPtr pMotionVectorAndFWidthTexture,
                                           Texture::SharedPtr pCurLinearZTexture,
                                           Texture::SharedPtr pPrevLinearZTexture)
@@ -193,7 +200,8 @@ void SVGFShadowPass::computeReprojection(RenderContext* pRenderContext,
   auto shaderVars = mpReprojection->getVars();
 
   shaderVars["gMotionAndFWidth"]        = pMotionVectorAndFWidthTexture;
-  shaderVars["gColor"]         = pColorTexture;
+  shaderVars["gShadow"]         = pShadowTexture;
+  shaderVars["gAO"]         = pAoTexture;
   shaderVars["gPrevIllum"]     = mpFilteredPastFbo->getColorTexture(0);
   shaderVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
   shaderVars["gLinearZAndNormal"]       = pCurLinearZTexture;

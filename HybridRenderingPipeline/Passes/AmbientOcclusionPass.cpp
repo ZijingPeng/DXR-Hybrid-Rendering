@@ -70,7 +70,7 @@ void AmbientOcclusionPass::renderGui(Gui* pGui)
 {
     int dirty = 0;
     dirty |= (int)pGui->addFloatVar("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
-	dirty |= (int)pGui->addIntVar("Num AO Rays", mNumRaysPerPixel, 1, 64);
+	  dirty |= (int)pGui->addIntVar("Num AO Rays", mNumRaysPerPixel, 1, 64);
 
     // If we modify options, let our pipeline know that we changed our rendering parameters 
     if (dirty) setRefreshFlag();

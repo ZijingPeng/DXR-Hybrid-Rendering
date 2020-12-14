@@ -37,7 +37,8 @@ bool isNaN(float f)
 }
 
 Texture2D   gMotionAndFWidth;
-Texture2D   gColor;
+Texture2D   gShadow;
+Texture2D   gAO;
 Texture2D   gPrevIllum;
 Texture2D   gPrevMoments;
 Texture2D   gLinearZAndNormal;
@@ -57,7 +58,7 @@ float3 demodulate(float3 c, float3 albedo)
 
 bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal, float3 normalPrev, float fwidthNormal)
 {
-    const int2 imageDim = getTextureDims(gColor, 0);
+    const int2 imageDim = getTextureDims(gShadow, 0);
 
     // check whether reprojected pixel is inside of the screen
     if (any(coord < int2(1, 1)) || any(coord > imageDim - int2(1, 1))) return false;
@@ -200,7 +201,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     const int2 ipos = posH.xy;
 
     //float3 illumination = demodulate(gColor[ipos].rgb - gEmission[ipos].rgb, gAlbedo[ipos].rgb);
-    float3 illumination = gColor[ipos].rgb;
+    float3 illumination = float3(gShadow[ipos].r * gAO[ipos].r);
 
     // Workaround path tracer bugs. TODO: remove this when we can.
     if (isNaN(illumination.x) || isNaN(illumination.y) || isNaN(illumination.z))

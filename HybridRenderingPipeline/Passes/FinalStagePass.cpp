@@ -21,7 +21,6 @@
 namespace {
 	// Where is our shader located?
     const char *kLambertShader = "finalStage.ps.hlsl";
-    const char *kAoChannel ="aoChannel";
     const char *kShadowAOChannel = "shadowFilter";
     const char *kDirectLightChannel = "directLightingChannel";
     const char *kReflectionChannel = "reflectionFilter";
@@ -87,7 +86,7 @@ void FinalStagePass::execute(RenderContext* pRenderContext)
 	Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputTexName);
 
 	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
-    if (!pDstTex) return;
+  if (!pDstTex) return;
 
 	// Pass our G-buffer textures down to the HLSL so we can shade
 	auto shaderVars = mpShader->getVars();

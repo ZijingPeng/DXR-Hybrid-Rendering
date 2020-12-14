@@ -9,11 +9,15 @@ class SVGFShadowPass : public ::RenderPass, inherit_shared_from_this<::RenderPas
 public:
 	using SharedPtr = std::shared_ptr<SVGFShadowPass>;
 
-	static SharedPtr create(const std::string& bufferToAccumulate, const std::string& inputColorBuffer);
+	static SharedPtr create(const std::string& bufferToAccumulate,
+                          const std::string& directShadowBuffer,
+                          const std::string& aoBuffer);
 	virtual ~SVGFShadowPass() = default;
 
 protected:
-	SVGFShadowPass(const std::string& bufferToAccumulate, const std::string& inputColorBuffer);
+	SVGFShadowPass(const std::string& bufferToAccumulate,
+                  const std::string& directShadowBuffer,
+                  const std::string& aoBuffer);
 
 	// Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -26,7 +30,8 @@ protected:
 	void clearBuffers(RenderContext* pRenderContext);
 
 	std::string                   mOutputTexName;
-  std::string                   mInputTexName;
+  std::string                   mDirectShadowTexName;
+  std::string                   mAoTexName;
 
 	// State for our shader
 	GraphicsState::SharedPtr      mpGfxState;
@@ -59,7 +64,8 @@ protected:
 private:
   void allocateFbos(glm::uvec2 dim);
   void computeReprojection(RenderContext* pRenderContext,
-							              Texture::SharedPtr pColorTexture,
+							              Texture::SharedPtr pShadowTexture,
+                            Texture::SharedPtr pAoTexture,
                             Texture::SharedPtr pMotionVectorAndFWidthTexture,
                             Texture::SharedPtr pCurLinearZTexture,
                             Texture::SharedPtr pPrevLinearZAndNormalTexture);

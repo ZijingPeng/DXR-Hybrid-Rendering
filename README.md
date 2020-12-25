@@ -2,7 +2,7 @@
 
 ![](/img/demo.gif)
 
-University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
+**University of Pennsylvania, CIS 565: GPU Programming and Architecture Final Project**
 
 - Shenyue Chen  [Email](mailto:shenyuec@seas.upenn.edu)  [GitHub](https://github.com/EvsChen)  [LinkedIn](https://www.linkedin.com/in/shenyue-chen-5b2728119/)
 - Szeyu Chan  [Email](mailto:sychan@seas.upenn.edu)  [GitHub](https://github.com/AsteriskChan)  [LinkedIn](https://www.linkedin.com/in/szeyuchan11/)
@@ -21,10 +21,6 @@ This project is to implement a hybrid rendering pipeline that combines both rast
 - [Microsoft Windows SDK version 1903 (10.0.18362.1)](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive)
 
 ## Features
-
-### Pipeline
-
-![](/img/pipeline.png)
 
 ### Shadow
 
@@ -56,7 +52,7 @@ To create a nice visual effect of reflection, we first sampled the normal distri
 
 Another SVGF-based filter is applied for denoising the result.
 
-We also tried to improve the performance by launching a quarter ray per pixel. In our test scene, when the camera is static, the filtered results of 1 spp reflection and 1/4 spp reflection are similar. When the camera is moving fast, the filtered result of quarter resolution reflection is more noisy than the other. However, after applying the quarter resolution reflection, our improvement hugely improved. We'll discuss the improvement at the next section.
+We also tried to improve the performance by launching a quarter ray per pixel. In our test scene, when the camera is static, the filtered results of 1 spp reflection and 1/4 spp reflection are similar. When the camera is moving fast, the filtered result of quarter resolution reflection is more noisy than the other. However, after applying the quarter resolution reflection, our improvement hugely improved. The performance is improved from 2.01 ms/frame to 0.72 ms/frame based on our profiling of Pica Pica scene (DXR on NVIDIA Tesla T4, Intel Xeon Platinum 8259CL @ 2.50GHz 16GB).
 
 | Reflection (1/4 spp)      | Reflection with filter (1/4 spp)   |
 | ------------------------- | ---------------------------------- |
@@ -67,17 +63,14 @@ We also tried to improve the performance by launching a quarter ray per pixel. I
 ## Performance Analysis
 In this performance analysis section, we compare our hybrid rendering pipeline to a naively-implemented path tracer under different bounces.
 
-|    |   |
-| ------------------------- | ---------------------------------- |
-| <img src="img/picapica-perf.png" width="400" /> | <img src="img/living-room-perf.png" width="400" />         |
-
-
+![](/img/compare-perf.png)
 
 First, we use the pica-pica scene and find out that the path tracer performs better in 1-3 bounces. We then use the living room scene. In this scene, our hybrid rendering pipeline out-performs the path tracer in all 1-3 bounces. In complex lighting scenarios, our hybrid renderer has a similar performance as the simple scene, while the path tracer's performance decreases significantly.
 
 <p align="center">
-<img src="img/pie-updated.png" width="500" />
+<img src="img/pie-updated.png" width="700" />
 </p>
+
 Above is a pie chart showing the breakdown of the time used by different passes. The two filters take up more than 50% percent of the total time, even though a lot of information is shared. 
 
 ## Results
